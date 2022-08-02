@@ -211,21 +211,8 @@ class PipelineHashRecord(PipelineRecordDefaultsBase, PipelineRecordBase):
         """
         Get a paginated list of recent items.
         """
-        if not exclusive_start_key:
-            # Evidently, https://github.com/boto/boto3/issues/2813 boto is able
-            # to distinguish fun(Parameter=None) from fun(). So, we can't use
-            # exclusive_start_key's optionality. We have to do an if clause!
-            # Fun!
-            result = table.query(
-                IndexName="GSI-2",
-                ScanIndexForward=False,
-                Limit=100,
-                KeyConditionExpression=Key("GSI2-PK").eq(
-                    DynamoDBItem.get_dynamodb_type_key(cls.__name__)
-                ),
-            )
-        else:
-            result = table.query(
+        result = (
+            table.query(
                 IndexName="GSI-2",
                 ExclusiveStartKey=exclusive_start_key,
                 ScanIndexForward=False,
@@ -234,6 +221,16 @@ class PipelineHashRecord(PipelineRecordDefaultsBase, PipelineRecordBase):
                     DynamoDBItem.get_dynamodb_type_key(cls.__name__)
                 ),
             )
+            if exclusive_start_key
+            else table.query(
+                IndexName="GSI-2",
+                ScanIndexForward=False,
+                Limit=100,
+                KeyConditionExpression=Key("GSI2-PK").eq(
+                    DynamoDBItem.get_dynamodb_type_key(cls.__name__)
+                ),
+            )
+        )
 
         return RecentItems(
             t.cast(DynamoDBCursorKey, result.get("LastEvaluatedKey", None)),
@@ -355,21 +352,8 @@ class MatchRecord(PipelineRecordDefaultsBase, _MatchRecord):
         Get a paginated list of recent match records. Subsequent calls must use
         `return_value.last_evaluated_key`.
         """
-        if not exclusive_start_key:
-            # Evidently, https://github.com/boto/boto3/issues/2813 boto is able
-            # to distinguish fun(Parameter=None) from fun(). So, we can't use
-            # exclusive_start_key's optionality. We have to do an if clause!
-            # Fun!
-            result = table.query(
-                IndexName="GSI-2",
-                Limit=100,
-                ScanIndexForward=False,
-                KeyConditionExpression=Key("GSI2-PK").eq(
-                    DynamoDBItem.get_dynamodb_type_key(cls.__name__)
-                ),
-            )
-        else:
-            result = table.query(
+        result = (
+            table.query(
                 IndexName="GSI-2",
                 Limit=100,
                 ExclusiveStartKey=exclusive_start_key,
@@ -378,6 +362,16 @@ class MatchRecord(PipelineRecordDefaultsBase, _MatchRecord):
                     DynamoDBItem.get_dynamodb_type_key(cls.__name__)
                 ),
             )
+            if exclusive_start_key
+            else table.query(
+                IndexName="GSI-2",
+                Limit=100,
+                ScanIndexForward=False,
+                KeyConditionExpression=Key("GSI2-PK").eq(
+                    DynamoDBItem.get_dynamodb_type_key(cls.__name__)
+                ),
+            )
+        )
 
         return RecentItems(
             t.cast(DynamoDBCursorKey, result.get("LastEvaluatedKey", None)),

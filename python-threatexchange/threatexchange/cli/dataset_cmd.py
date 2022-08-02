@@ -90,17 +90,17 @@ class DatasetCommand(command_base.Command):
         ]
         indicators = {}
         for store in stores:
-            indicators.update(store.load_state())
+            indicators |= store.load_state()
 
         if self.only_type:
             signal_types = []
-            s_type = meta.get_signal_types_by_name().get(self.only_type)
-            if s_type:
+            if s_type := meta.get_signal_types_by_name().get(self.only_type):
                 signal_types.append(s_type)
                 self.signal_summary = True
 
-            content_type = meta.get_content_types_by_name().get(self.only_type)
-            if content_type:
+            if content_type := meta.get_content_types_by_name().get(
+                self.only_type
+            ):
                 signal_types.extend(content_type.get_signal_types())
                 self.signal_summary = True
 
@@ -174,8 +174,7 @@ def generate_cli_indices(dataset: Dataset, indicator_stores):
     for name, signal_type in signal_types.items():
         index_cls = signal_type.get_index_cls()
         index = None
-        indicators_for_signal = indicators[name]
-        if indicators_for_signal:
+        if indicators_for_signal := indicators[name]:
             index = index_cls.build(
                 (indicator.indicator_type, indicator.rollup)
                 for indicator in indicators_for_signal

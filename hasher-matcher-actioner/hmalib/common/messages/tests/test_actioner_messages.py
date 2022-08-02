@@ -21,17 +21,16 @@ class ActionMessageTestCase(unittest.TestCase):
             ActionRule(
                 name="Enqueue Mini-Castle for Review",
                 action_label=enqueue_mini_castle_for_review_action_label,
-                must_have_labels=set(
-                    [
-                        BankIDClassificationLabel("303636684709969"),
-                        ClassificationLabel("true_positive"),
-                    ]
-                ),
-                must_not_have_labels=set(
-                    [BankedContentIDClassificationLabel("3364504410306721")]
-                ),
-            ),
+                must_have_labels={
+                    BankIDClassificationLabel("303636684709969"),
+                    ClassificationLabel("true_positive"),
+                },
+                must_not_have_labels={
+                    BankedContentIDClassificationLabel("3364504410306721")
+                },
+            )
         ]
+
 
         banked_signal = BankedSignal(
             banked_content_id="4169895076385542",

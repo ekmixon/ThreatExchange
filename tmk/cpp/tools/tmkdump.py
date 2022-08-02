@@ -69,10 +69,10 @@ def dump_tmk_file(filename):
         frame_feature_count = struct.unpack('i',
             frame_feature_count)[0]
 
-        print("filename                      %s" % filename)
-        print("project_magic                 %s" % project_magic)
-        print("file_type_magic               %s" % file_type_magic)
-        print("frame_feature_algorithm_magic %s" % frame_feature_algorithm_magic)
+        print(f"filename                      {filename}")
+        print(f"project_magic                 {project_magic}")
+        print(f"file_type_magic               {file_type_magic}")
+        print(f"frame_feature_algorithm_magic {frame_feature_algorithm_magic}")
         print("frames_per_second             %d" % frames_per_second)
         print("num_periods                   %d" % num_periods)
         print("num_fourier_coefficients      %d" % num_fourier_coefficients)
@@ -90,14 +90,14 @@ def dump_tmk_file(filename):
             handle.read(4 * frame_feature_dimension))
         print(pure_average_feature)
 
-        for i in range(0, num_periods):
-            for j in range(0, num_fourier_coefficients):
+        for i in range(num_periods):
+            for j in range(num_fourier_coefficients):
                 cos_feature = struct.unpack('f' * frame_feature_dimension,
                     handle.read(4 * frame_feature_dimension))
                 print("cos:%d:%d " % (i, j), end='')
                 print(cos_feature)
-        for i in range(0, num_periods):
-            for j in range(0, num_fourier_coefficients):
+        for i in range(num_periods):
+            for j in range(num_fourier_coefficients):
                 sin_feature = struct.unpack('f' * frame_feature_dimension,
                     handle.read(4 * frame_feature_dimension))
                 print("sin:%d:%d " % (i, j), end='')
@@ -109,7 +109,5 @@ try:
     for filename in sys.argv[1:]:
         dump_tmk_file(filename)
 except IOError as e:
-    if e.errno == errno.EPIPE:
-        pass  # e.g. we were piped to head which is harmless
-    else:
+    if e.errno != errno.EPIPE:
         raise e

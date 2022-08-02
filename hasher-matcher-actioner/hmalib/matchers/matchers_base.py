@@ -89,11 +89,7 @@ class Matcher:
         with metrics.timer(metrics.names.indexer.search_index):
             match_results: t.List[IndexMatch] = index.query(signal_value)
 
-        if not match_results:
-            # No matches found in the index
-            return []
-
-        return self.filter_match_results(match_results)
+        return self.filter_match_results(match_results) if match_results else []
 
     def filter_match_results(self, results: t.List[IndexMatch]) -> t.List[IndexMatch]:
         """
@@ -198,7 +194,7 @@ class Matcher:
     def get_index(self, signal_type: t.Type[SignalType]) -> SignalTypeIndex:
         # If cached, return an index instance for the signal_type. If not, build
         # one, cache and return.
-        if not signal_type in self._cached_indexes:
+        if signal_type not in self._cached_indexes:
             index_cls = INDEX_MAPPING[signal_type]
 
             with metrics.timer(metrics.names.indexer.download_index):

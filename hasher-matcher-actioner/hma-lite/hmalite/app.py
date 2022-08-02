@@ -19,7 +19,7 @@ app.register_blueprint(matcher_api, url_prefix="/v1/hashes")
 # Set up those configs
 if app.config["ENV"] == "production":
     config_cls = HmaLiteProdConfig
-    app.config.from_object(HmaLiteProdConfig())
+    app.config.from_object(config_cls())
 else:
     config_cls = HmaLiteDevConfig
 config_helper = config_cls.init_with_environ()
@@ -111,10 +111,7 @@ def create_index(filepath):
 
         app.logger.info("Read CSV file, key=%s", key)
 
-        entries = []
-        for row in reader:
-            entries.append((row[key], row))
-
+        entries = [(row[key], row) for row in reader]
     index = pdq_index.PDQIndex.build(entries)
     app.logger.info(
         "writing index of size %d from %s to %s",
@@ -133,9 +130,7 @@ def query_index(hash):
     # Grab a local copy in case it gets replaced mid-request
     index = get_local_index()
     results = index.query(hash)
-    matches = []
-    for result in results:
-        matches.append(result.metadata)
+    matches = [result.metadata for result in results]
     app.logger.info("query against %d, find %d", len(index), len(matches))
     return matches
 

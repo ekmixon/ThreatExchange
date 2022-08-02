@@ -35,10 +35,8 @@ class VideoMD5Signal(
         file_hash = hashlib.md5()
         blocksize = 8192
         with open(path, "rb") as f:
-            chunk = f.read(blocksize)
-            while chunk:
+            while chunk := f.read(blocksize):
                 file_hash.update(chunk)
-                chunk = f.read(blocksize)
         return file_hash.hexdigest()
 
     @classmethod

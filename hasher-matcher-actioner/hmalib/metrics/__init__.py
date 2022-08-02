@@ -164,9 +164,7 @@ if measure_performance:
         """
         try:
             reporter = AWSCloudWatchReporter(namespace)
-            datums = []
-            datums.extend([reporter.get_counter_datum(k, v) for k, v in counts.items()])
-
+            datums = [reporter.get_counter_datum(k, v) for k, v in counts.items()]
             datums.extend(
                 [
                     reporter.get_multi_value_datums(

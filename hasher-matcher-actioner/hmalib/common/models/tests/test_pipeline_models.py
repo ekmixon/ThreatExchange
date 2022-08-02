@@ -170,12 +170,10 @@ class TestPDQModels(DynamoDBTableTestBase, unittest.TestCase):
         record.write_to_table(self.table)
 
         assert any(
-            [
-                record == item
-                for item in models.PipelineHashRecord.get_from_content_id(
-                    self.table, TestPDQModels.TEST_CONTENT_ID
-                )
-            ]
+            record == item
+            for item in models.PipelineHashRecord.get_from_content_id(
+                self.table, TestPDQModels.TEST_CONTENT_ID
+            )
         )
 
     def test_query_md5_hash_record(self):
@@ -183,12 +181,10 @@ class TestPDQModels(DynamoDBTableTestBase, unittest.TestCase):
         record.write_to_table(self.table)
 
         assert any(
-            [
-                record == item
-                for item in models.PipelineHashRecord.get_from_content_id(
-                    self.table, TestPDQModels.TEST_CONTENT_ID
-                )
-            ]
+            record == item
+            for item in models.PipelineHashRecord.get_from_content_id(
+                self.table, TestPDQModels.TEST_CONTENT_ID
+            )
         )
 
     def test_query_recent_hash_records(self):

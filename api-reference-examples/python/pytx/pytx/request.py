@@ -120,9 +120,7 @@ class Broker(object):
 
         if resp.status_code != 200:
             error = json.loads(resp.text).get(R.ERROR, None)
-            response = {}
-            response['status_code'] = resp.status_code
-            response['url'] = resp.url
+            response = {'status_code': resp.status_code, 'url': resp.url}
             if error:
                 response[R.MESSAGE] = error.get(R.MESSAGE, None)
                 response[R.TYPE] = error.get(R.TYPE, None)
@@ -332,7 +330,7 @@ class Broker(object):
         """
 
         if not params:
-            params = dict()
+            params = {}
         if headers is None:
             headers = get_headers()
         if proxies is None:
@@ -376,7 +374,7 @@ class Broker(object):
         """
 
         if not params:
-            params = dict()
+            params = {}
         if headers is None:
             headers = get_headers()
         if proxies is None:
@@ -420,7 +418,7 @@ class Broker(object):
         """
 
         if not params:
-            params = dict()
+            params = {}
         if headers is None:
             headers = get_headers()
         if proxies is None:
@@ -477,7 +475,7 @@ class Broker(object):
         if not klass:
             raise pytxValueError('Must provide a valid object to query.')
         if not params:
-            params = dict()
+            params = {}
         if headers is None:
             headers = get_headers()
         if proxies is None:
@@ -512,7 +510,7 @@ class Broker(object):
                                                                     )
                     )
                 except Exception as e:
-                    log_message('Missing key in response: %s' % e)
+                    log_message(f'Missing key in response: {e}')
             for data in results[t.DATA]:
                 if to_dict:
                     yield data

@@ -152,20 +152,16 @@ class SimpleDescriptorRollup:
     def merge(self, descriptor: ThreatDescriptor) -> None:
         # Is the other descriptor mine? If so, unconditionally take it and clear
         # everything else
-        if descriptor.is_mine:
+        if (
+            descriptor.is_mine
+            or self.added_on != self.IS_MY_OPINION
+            and descriptor.is_false_positive
+        ):
             self.added_on = self.IS_MY_OPINION
             self.first_descriptor_id = descriptor.id
             self.labels = descriptor.tags
             return
-        # My descriptor beats my reactions, and I don't want
-        # to take anyone else's opinion
         elif self.added_on == self.IS_MY_OPINION:
-            return
-        # Is my reaction?
-        elif descriptor.is_false_positive:
-            self.added_on = self.IS_MY_OPINION
-            self.first_descriptor_id = descriptor.id
-            self.labels = descriptor.tags
             return
         # Else merge the labels together
         self.added_on, self.first_descriptor_id = min(
@@ -181,9 +177,7 @@ class SimpleDescriptorRollup:
     @classmethod
     def from_row(cls, row: t.Iterable) -> "SimpleDescriptorRollup":
         """Simple conversion from CSV row"""
-        labels = []
-        if row[2]:
-            labels = row[2].split(" ")
+        labels = row[2].split(" ") if row[2] else []
         return cls(int(row[0]), row[1], labels)
 
     @classmethod

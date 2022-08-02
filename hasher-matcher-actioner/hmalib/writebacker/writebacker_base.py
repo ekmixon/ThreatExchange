@@ -64,9 +64,10 @@ class Writebacker:
             for writebacker_cls in cls.__subclasses__()
         }
 
-        if source not in sources_to_writebacker_cls.keys():
+        if source in sources_to_writebacker_cls:
+            return sources_to_writebacker_cls[source]()
+        else:
             return None
-        return sources_to_writebacker_cls[source]()
 
     def writeback_is_enabled(self, writeback_signal: BankedSignal) -> bool:
         """
@@ -149,7 +150,7 @@ class ThreatExchangeWritebacker(Writebacker):
         if isinstance(privacy_group_config, ThreatExchangeConfig):
             return privacy_group_config.write_back
         # If no config, dont write back
-        logger.warn("No config found for privacy group " + str(privacy_group_id))
+        logger.warn(f"No config found for privacy group {str(privacy_group_id)}")
         return False
 
     @property
@@ -208,7 +209,7 @@ class ThreatExchangeTruePositiveWritebacker(ThreatExchangeWritebacker):
 
         # If we already have a descriptor we can copy it and re-upload to ensure it never expires
         if my_descriptor:
-            members = {member for member in my_descriptor.get("privacy_members", [])}
+            members = set(my_descriptor.get("privacy_members", []))
 
             postParams["privacy_members"] = ",".join(
                 members.union({str(privacy_group_id)})
@@ -227,9 +228,7 @@ class ThreatExchangeTruePositiveWritebacker(ThreatExchangeWritebacker):
 
             response = self.te_api.upload_threat_descriptor(postParams, False, False)
 
-        error = response[1] or response[2].get("error", {}).get("message")
-
-        if error:
+        if error := response[1] or response[2].get("error", {}).get("message"):
             return [
                 f"""
 Error writing back TruePositive for indicator {writeback_signal.banked_content_id}
@@ -300,16 +299,11 @@ class ThreatExchangeRemoveOpinionWritebacker(ThreatExchangeWritebacker):
     def remove_descriptor_from_privacy_group(
         self, my_descriptor: t.Dict[str, t.Any], privacy_group_id: str
     ) -> str:
-        new_privacy_groups = [
+        if new_privacy_groups := [
             pg
             for pg in my_descriptor["privacy_members"]
             if isinstance(pg, str) and pg != privacy_group_id
-        ]
-        if not new_privacy_groups:
-            response = self.te_api.delete_threat_descriptor(
-                my_descriptor["id"], True, False
-            )
-        else:
+        ]:
             postParams = {
                 "privacy_members": ",".join(new_privacy_groups),
                 "privacy_type": "HAS_PRIVACY_GROUP",
@@ -317,8 +311,11 @@ class ThreatExchangeRemoveOpinionWritebacker(ThreatExchangeWritebacker):
             }
             response = self.te_api.copy_threat_descriptor(postParams, True, False)
 
-        error = response[1] or response[2].get("error", {}).get("message")
-        if error:
+        else:
+            response = self.te_api.delete_threat_descriptor(
+                my_descriptor["id"], True, False
+            )
+        if error := response[1] or response[2].get("error", {}).get("message"):
             return f"Error writing back RemoveOpinion for indicator {my_descriptor['indicator_id']} Error: {error}"
         else:
             return f"Deleted decriptor {my_descriptor['id']} for indicator {my_descriptor['indicator_id']}"
@@ -357,8 +354,7 @@ class ThreatExchangeReactionWritebacker(ThreatExchangeWritebacker):
         for descriptor in other_desriptors:
             id = descriptor["id"]
             result = self.te_api.react_to_threat_descriptor(id, self.reaction)
-            error = result[1] or result[2].get("error", {}).get("message")
-            if error:
+            if error := result[1] or result[2].get("error", {}).get("message"):
                 logs.append(
                     f"Error writing back Reacting {self.reaction} to descriptor {id} Error: {error}"
                 )
@@ -377,19 +373,9 @@ class ThreatExchangeFalsePositiveWritebacker(ThreatExchangeReactionWritebacker):
     reaction = "DISAGREE_WITH_TAGS"
 
 
-# TODO: Currently writing back INGESTED fails becuase of API limits. Need to
-#       solve before sending reaction. Possible solution to create new batch react endpoint
-# class ThreatExchangeIngestedWritebacker(ThreatExchangeReactionWritebacker):
-#     reaction = "INGESTED"
-
-
 class ThreatExchangeSawThisTooWritebacker(ThreatExchangeReactionWritebacker):
     """
     For writing back to ThreatExhcnage that a Match has occurred
     """
 
     reaction = "SAW_THIS_TOO"
-
-
-if __name__ == "__main__":
-    pass

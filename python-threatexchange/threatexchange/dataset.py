@@ -82,9 +82,11 @@ class Dataset:
 
     def get_fetch_checkpoint(self) -> FetchCheckpoint:
         checkpoint = self._fetch_checkpoint_path()
-        if not checkpoint.exists():
-            return FetchCheckpoint(0, 0)
-        return FetchCheckpoint.deserialize(checkpoint.read_text())
+        return (
+            FetchCheckpoint.deserialize(checkpoint.read_text())
+            if checkpoint.exists()
+            else FetchCheckpoint(0, 0)
+        )
 
     def _signal_state_file(self, signal_type: signal_base.SignalType) -> pathlib.Path:
         return self.state_dir / f"{signal_type.get_name()}{self.EXTENSION}"

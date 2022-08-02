@@ -139,10 +139,7 @@ class FetchCommand(command_base.Command):
             self._print_progress()
 
     def _print_progress(self):
-        processed = ""
-        if self.processed:
-            processed = f"Downloaded {self.processed} updates. "
-
+        processed = f"Downloaded {self.processed} updates. " if self.processed else ""
         on_privacy_group = ""
         if self.current_pgroup:
             on_privacy_group = f"on PrivacyGroup({self.current_pgroup}) "

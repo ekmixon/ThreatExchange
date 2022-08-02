@@ -66,10 +66,7 @@ def validate_access_token(token: str) -> bool:
         logger.debug("No access tokens found")
         return False
 
-    if token in access_tokens:
-        return True
-
-    return False
+    return token in access_tokens
 
 
 def lambda_handler(event, context):

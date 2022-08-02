@@ -17,10 +17,7 @@ def convert_to_header(field):
     :returns: str
     """
     if (isinstance(field, basestring)):
-        if field == 'ID':
-            return '_ID'  # Trailing _ so as not to confuse Excel
-        else:
-            return field
+        return '_ID' if field == 'ID' else field
     elif (isinstance(field, list)):
         return '_'.join(field)
 

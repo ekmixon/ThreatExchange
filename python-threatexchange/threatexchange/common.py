@@ -13,8 +13,7 @@ import unicodedata
 
 def class_name_to_human_name(name: str, suffix: str) -> str:
     """Helper to make human-friendly names using a class name as a template"""
-    if name.endswith(suffix):
-        name = name[: -len(suffix)]
+    name = name.removesuffix(suffix)
     return camel_case_to_underscore(name)
 
 

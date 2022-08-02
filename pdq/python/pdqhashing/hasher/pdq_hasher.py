@@ -53,9 +53,9 @@ class PDQHasher:
     def compute_dct_matrix(self):
         matrix_scale_factor = math.sqrt(2.0 / 64.0)
         d = [0] * 16
-        for i in range(0, 16):
+        for i in range(16):
             di = [0] * 64
-            for j in range(0, 64):
+            for j in range(64):
                 di[j] = math.cos((math.pi / 2 / 64.0) * (i + 1) * (2 * j + 1))
             d[i] = di
         return d
@@ -71,8 +71,8 @@ class PDQHasher:
 
     class HashingMetadata:
         def __init__(self) -> None:
-            self.readSeconds = float(-1.0)
-            self.hashSeconds = float(-1.0)
+            self.readSeconds = -1.0
+            self.hashSeconds = -1.0
             self.imageHeightTimesWidth = -1
 
     def fromFile(self, filepath, hashingMetadata=None):
@@ -325,8 +325,7 @@ class PDQHasher:
                 d = int(((u - v) * 100) / 255)
                 gradientSum += int(abs(d))
         quality = int(gradientSum / 90)
-        if quality > 100:
-            quality = 100
+        quality = min(quality, 100)
         return quality
 
     def dct64To16(self, A, T, B):
@@ -347,11 +346,11 @@ class PDQHasher:
         # Tij = sum {k} Dik Akj
 
         T = [0] * 16
-        for i in range(0, 16):
+        for i in range(16):
             ti = [0] * 64
-            for j in range(0, 64):
+            for j in range(64):
                 tij = 0.0
-                for k in range(0, 64):
+                for k in range(64):
                     tij += D[i][k] * A[k][j]
                 ti[j] = tij
             T[i] = ti
@@ -360,7 +359,7 @@ class PDQHasher:
         # Bij = sum {k} Tik Djk
         for i in range(16):
             for j in range(16):
-                sumk = float(0.0)
+                sumk = 0.0
                 for k in range(64):
                     sumk += T[i][k] * D[j][k]
                 B[i][j] = sumk
@@ -386,43 +385,28 @@ class PDQHasher:
     def dct16OriginalToRotate90(self, A, B):
         for i in range(16):
             for j in range(16):
-                if (j & 1) != 0:
-                    B[j][i] = A[i][j]
-                else:
-                    B[j][i] = -A[i][j]
+                B[j][i] = A[i][j] if (j & 1) != 0 else -A[i][j]
 
     def dct16OriginalToRotate180(self, A, B):
         for i in range(16):
             for j in range(16):
-                if ((i + j) & 1) != 0:
-                    B[i][j] = -A[i][j]
-                else:
-                    B[i][j] = A[i][j]
+                B[i][j] = -A[i][j] if ((i + j) & 1) != 0 else A[i][j]
 
     def dct16OriginalToRotate270(self, A, B):
         for i in range(16):
             for j in range(16):
-                if (i & 1) != 0:
-                    B[j][i] = A[i][j]
-                else:
-                    B[j][i] = -A[i][j]
+                B[j][i] = A[i][j] if (i & 1) != 0 else -A[i][j]
 
     def dct16OriginalToFlipX(self, A, B):
         i = 0
         for i in range(16):
             for j in range(16):
-                if (i & 1) != 0:
-                    B[i][j] = A[i][j]
-                else:
-                    B[i][j] = -A[i][j]
+                B[i][j] = A[i][j] if (i & 1) != 0 else -A[i][j]
 
     def dct16OriginalToFlipY(self, A, B):
         for i in range(16):
             for j in range(16):
-                if (j & 1) != 0:
-                    B[i][j] = A[i][j]
-                else:
-                    B[i][j] = -A[i][j]
+                B[i][j] = A[i][j] if (j & 1) != 0 else -A[i][j]
 
     def dct16OriginalToFlipPlus1(self, A, B):
         for i in range(16):
@@ -432,10 +416,7 @@ class PDQHasher:
     def dct16OriginalToFlipMinus1(self, A, B):
         for i in range(16):
             for j in range(16):
-                if ((i + j) & 1) != 0:
-                    B[j][i] = -A[i][j]
-                else:
-                    B[j][i] = A[i][j]
+                B[j][i] = -A[i][j] if ((i + j) & 1) != 0 else A[i][j]
 
     def pdqBuffer16x16ToBits(self, dctOutput16x16):
         """
@@ -607,44 +588,32 @@ class PDQHasher:
         li = 0  # Index of left edge of read window, for subtracts
         ri = 0  # Index of right edge of read windows, for adds
         oi = 0  # Index into output vector
-        sum = float(0.0)
+        sum = 0.0
         currentWindowSize = 0
 
-        # PHASE 1: ACCUMULATE FIRST SUM NO WRITES
-        i = 0
-        while i < phase_1_nreps:
+        for _ in range(phase_1_nreps):
             sum += invec[inStartOffset + ri]
             currentWindowSize += 1
             ri += stride
-            i += 1
-        # PHASE 2: INITIAL WRITES WITH SMALL WINDOW
-        i = 0
-        while i < phase_2_nreps:
+        for _ in range(phase_2_nreps):
             sum += invec[inStartOffset + ri]
             currentWindowSize += 1
             outvec[outStartOffset + oi] = sum / currentWindowSize
             ri += stride
             oi += stride
-            i += 1
-        # PHASE 3: WRITES WITH FULL WINDOW
-        i = 0
-        while i < phase_3_nreps:
+        for _ in range(phase_3_nreps):
             sum += invec[inStartOffset + ri]
             sum -= invec[inStartOffset + li]
             outvec[outStartOffset + oi] = sum / currentWindowSize
             li += stride
             ri += stride
             oi += stride
-            i += 1
-        # PHASE 4: FINAL WRITES WITH SMALL WINDOW
-        i = 0
-        while i < phase_4_nreps:
+        for _ in range(phase_4_nreps):
             sum -= invec[inStartOffset + li]
             currentWindowSize -= 1
             outvec[outStartOffset + oi] = sum / currentWindowSize
             li += stride
             oi += stride
-            i += 1
 
     @classmethod
     def boxAlongRowsFloat(cls, input, output, numRows, numCols, windowSize):

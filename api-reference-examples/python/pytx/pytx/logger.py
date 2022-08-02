@@ -9,10 +9,7 @@ def do_log():
     Should we log?
     """
     global __LOG
-    if __LOG is None:
-        return False
-    else:
-        return True
+    return __LOG is not None
 
 
 def log_message(message):

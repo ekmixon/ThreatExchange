@@ -68,9 +68,9 @@ def dump_vstr(filename):
         frame_width = struct.unpack('i', frame_width)[0]
         frames_per_second = struct.unpack('i', frames_per_second)[0]
 
-        print("filename                      %s" % filename)
-        print("project_magic                 %s" % project_magic)
-        print("file_type_magic               %s" % file_type_magic)
+        print(f"filename                      {filename}")
+        print(f"project_magic                 {project_magic}")
+        print(f"file_type_magic               {file_type_magic}")
         print("frame_height                  %d" % frame_height)
         print("frame_width                   %d" % frame_width)
         print("frames_per_second             %d" % frames_per_second)
@@ -93,7 +93,5 @@ try:
     for filename in sys.argv[1:]:
         dump_vstr(filename)
 except IOError as e:
-    if e.errno == errno.EPIPE:
-        pass  # e.g. we were piped to head which is harmless
-    else:
+    if e.errno != errno.EPIPE:
         raise e

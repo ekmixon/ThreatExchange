@@ -68,14 +68,11 @@ class TestContentModels(DynamoDBTableTestBase, unittest.TestCase):
             ActionRule(
                 name="Enqueue Mini-Castle for Review",
                 action_label=enqueue_mini_castle_for_review_action_label,
-                must_have_labels=set(
-                    [
-                        ClassificationLabel("true_positive"),
-                    ]
-                ),
+                must_have_labels={ClassificationLabel("true_positive")},
                 must_not_have_labels=set(),
-            ),
+            )
         ]
+
 
         banked_signal = BankedSignal(
             banked_content_id="4169895076385542",

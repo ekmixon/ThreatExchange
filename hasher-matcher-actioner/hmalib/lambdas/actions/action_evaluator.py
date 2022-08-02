@@ -134,7 +134,7 @@ def get_actions_to_take(
     """
     Returns action labels for each action rule that applies to a match message.
     """
-    action_label_to_action_rules: t.Dict[ActionLabel, t.List[ActionRule]] = dict()
+    action_label_to_action_rules: t.Dict[ActionLabel, t.List[ActionRule]] = {}
 
     content_classifications = {
         SubmittedContentClassificationLabel(field)

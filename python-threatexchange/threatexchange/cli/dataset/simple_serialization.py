@@ -77,18 +77,19 @@ class CliIndicatorSerialization(threat_updates.ThreatUpdateSerialization):
             match = re.match(pattern, path.name)
             if not match or not path.is_file():
                 continue
-            indicator_type = match.group(1)
+            indicator_type = match[1]
             # Violate your warranty with class state! Not threadsafe!
             csv.field_size_limit(path.stat().st_size)  # dodge field size problems
             with path.open("r", newline="") as f:
-                for row in csv.reader(f):
-                    ret.append(
-                        cls(
-                            indicator_type,
-                            row[0],
-                            SimpleDescriptorRollup.from_row(row[1:]),
-                        )
+                ret.extend(
+                    cls(
+                        indicator_type,
+                        row[0],
+                        SimpleDescriptorRollup.from_row(row[1:]),
                     )
+                    for row in csv.reader(f)
+                )
+
         return ret
 
 
@@ -148,12 +149,11 @@ class HMASerialization(CliIndicatorSerialization):
             match = re.match(pattern, path.name)
             if not match or not path.is_file():
                 continue
-            indicator_type = match.group(1)
+            indicator_type = match[1]
             # Violate your warranty with class state! Not threadsafe!
             csv.field_size_limit(path.stat().st_size)  # dodge field size problems
             with path.open("r", newline="") as f:
-                for row in csv.reader(f):
-                    ret.append(cls.from_csv_row(row, indicator_type))
+                ret.extend(cls.from_csv_row(row, indicator_type) for row in csv.reader(f))
         return ret
 
 

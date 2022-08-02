@@ -45,9 +45,10 @@ class PDQIndex(SignalTypeIndex):
         )
         matches = []
         for result_ids in results:
-            for id in result_ids:
-                # distance = -1 (index does not currently support distance)
-                matches.append(IndexMatch(-1, self.local_id_to_entry[id][1]))
+            matches.extend(
+                IndexMatch(-1, self.local_id_to_entry[id][1]) for id in result_ids
+            )
+
         return matches
 
     @classmethod

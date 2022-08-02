@@ -153,14 +153,12 @@ class Hash256:
         str = []
         while i >= 0:
             word = self.w[i] & 0xFFFF
-            j = 15
             bits = []
-            while j >= 0:
+            for j in range(15, -1, -1):
                 if (word & (1 << j)) != 0:
                     bits.append("1")
                 else:
                     bits.append("0")
-                j -= 1
             str.append(" ".join(bits))
             i -= 1
         return "\n".join(str)
@@ -170,13 +168,11 @@ class Hash256:
         str = []
         while i >= 0:
             word = self.w[i] & 0xFFFF
-            j = 15
-            while j >= 0:
+            for j in range(15, -1, -1):
                 if (word & (1 << j)) != 0:
                     str.append("1")
                 else:
                     str.append("0")
-                j -= 1
             i -= 1
         return " ".join(str)
 
@@ -197,10 +193,7 @@ class Hash256:
 
     def __eq__(self, other) -> bool:
         if isinstance(other, (Hash256,)):
-            for i in range(self.HASH256_NUM_SLOTS):
-                if self.w[i] != other.w[i]:
-                    return False
-            return True
+            return all(self.w[i] == other.w[i] for i in range(self.HASH256_NUM_SLOTS))
         else:
             return False
 

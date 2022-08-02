@@ -17,10 +17,7 @@ def matcher_query():
     if request.method == "POST":
         hashes = request.json["hashes"]
 
-        matches = {}
-
-        for pdq in hashes:
-            matches[pdq] = index_query_to_dict(local_index.query(pdq))
+        matches = {pdq: index_query_to_dict(local_index.query(pdq)) for pdq in hashes}
 
         return jsonify(results=matches)
     else:

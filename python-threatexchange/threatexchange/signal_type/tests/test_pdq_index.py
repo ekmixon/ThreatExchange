@@ -82,14 +82,16 @@ class TestPDQIndex(unittest.TestCase):
             return acc
 
         # Convert results to distance -> set of metadata map
-        distance_to_result_items_map: t.Dict[int, t.Set[t.Dict]] = functools.reduce(
-            quality_indexed_dict_reducer, result, dict()
-        )
+        distance_to_result_items_map: t.Dict[
+            int, t.Set[t.Dict]
+        ] = functools.reduce(quality_indexed_dict_reducer, result, {})
+
 
         # Convert expected to distance -> set of metadata map
-        distance_to_expected_items_map: t.Dict[int, t.Set[t.Dict]] = functools.reduce(
-            quality_indexed_dict_reducer, result, dict()
-        )
+        distance_to_expected_items_map: t.Dict[
+            int, t.Set[t.Dict]
+        ] = functools.reduce(quality_indexed_dict_reducer, result, {})
+
 
         assert len(distance_to_expected_items_map) == len(
             distance_to_result_items_map

@@ -68,11 +68,7 @@ def main():
 
         args.object = 'threat_indicator'
         args.output = 'threat_indicators.csv'
-        query(args)
-
-    else:
-
-        query(args)
+    query(args)
 
 
 def query(args):
@@ -85,7 +81,7 @@ def query(args):
     result_limit = 1000
 
     # write results to this stream
-    output_stream = '/dev/stdout' if not args.output else args.output
+    output_stream = args.output or '/dev/stdout'
 
     for day in range(args.days_back):
 
@@ -94,20 +90,18 @@ def query(args):
 
         with open(output_stream, 'wb') as ostream:
 
-            print('Writing to %s...' % output_stream)
+            print(f'Writing to {output_stream}...')
 
             writer = csv.writer(ostream)
 
             if args.object == 'exchange_member':
-
                 engine = ThreatExchangeMember
 
                 fields = [XM.ID, XM.NAME]
 
-                parameters = dict()
+                parameters = {}
 
             elif args.object == 'malware_analysis':
-
                 engine = Malware
 
                 fields = [
@@ -146,7 +140,6 @@ def query(args):
                 )
 
             elif args.object == 'malware_family':
-
                 engine = MalwareFamily
 
                 fields = [
@@ -170,7 +163,6 @@ def query(args):
                 )
 
             elif args.object == 'threat_descriptor':
-
                 engine = ThreatDescriptor
 
                 fields = [
@@ -212,7 +204,6 @@ def query(args):
                 )
 
             elif args.object == 'threat_indicator':
-
                 engine = ThreatIndicator
 
                 fields = [TI.ID, TI.INDICATOR, TI.TYPE]

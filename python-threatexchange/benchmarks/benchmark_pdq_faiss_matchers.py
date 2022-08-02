@@ -74,7 +74,7 @@ print("")
 ######
 
 faiss.omp_set_num_threads(args.faiss_threads)
-seed = args.seed if args.seed else time.time_ns()
+seed = args.seed or time.time_ns()
 rng = numpy.random.default_rng(seed)
 if args.seed is None:
     print("using random seed of ", seed)

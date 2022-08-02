@@ -184,10 +184,7 @@ class ThreatExchangeAPI:
         # }
         data = response["data"]
         desired = list(filter(lambda o: o["text"] == tagName, data))
-        if len(desired) < 1:
-            return None
-        else:
-            return desired[0]["id"]
+        return desired[0]["id"] if desired else None
 
     def get_threat_descriptors(self, ids, **kwargs):
         """
@@ -400,28 +397,29 @@ class ThreatExchangeAPI:
         ]
 
         missingFields = [
-            fieldName if postParams.get(fieldName) == None else None
+            fieldName if postParams.get(fieldName) is None else None
             for fieldName in requiredFields
         ]
+
         missingFields = [fieldName for fieldName in missingFields if fieldName != None]
 
-        if len(missingFields) == 0:
+        if not missingFields:
             return None
         elif len(missingFields) == 1:
-            return "Missing field %s" % missingFields[0]
+            return f"Missing field {missingFields[0]}"
         else:
-            return "Missing fields %s" % ",".join(missingFields)
+            return f'Missing fields {",".join(missingFields)}'
 
     def _validate_post_pararms_for_copy(self, postParams):
         """
         Returns error message or None.
         This simply checks to see (client-side) if required fields aren't provided.
         """
-        if postParams.get(self._POST_PARAM_NAMES["descriptor_id"]) == None:
+        if postParams.get(self._POST_PARAM_NAMES["descriptor_id"]) is None:
             return "Source-descriptor ID must be specified for copy."
-        if postParams.get(self._POST_PARAM_NAMES["privacy_type"]) == None:
+        if postParams.get(self._POST_PARAM_NAMES["privacy_type"]) is None:
             return "Privacy type must be specified for copy."
-        if postParams.get(self._POST_PARAM_NAMES["privacy_members"]) == None:
+        if postParams.get(self._POST_PARAM_NAMES["privacy_members"]) is None:
             return "Privacy members must be specified for copy."
         return None
 
@@ -523,10 +521,11 @@ class ThreatExchangeAPI:
 
         # Get rid of fields like last_upated from the source descriptor which
         # aren't valid for post
-        postParams = {}
-        for key, value in newDescriptor.items():
-            if self._POST_PARAM_NAMES.get(key) != None:
-                postParams[key] = value
+        postParams = {
+            key: value
+            for key, value in newDescriptor.items()
+            if self._POST_PARAM_NAMES.get(key) != None
+        }
 
         return self.upload_threat_descriptor(postParams, showURLs, dryRun)
 
@@ -559,7 +558,7 @@ class ThreatExchangeAPI:
     def _postThreatDescriptor(self, url, postParams, showURLs, dryRun):
         """Code-reuse for submit and update"""
         for key, value in postParams.items():
-            url += "&%s=%s" % (key, urllib.parse.quote(str(value)))
+            url += f"&{key}={urllib.parse.quote(str(value))}"
         if showURLs:
             print()
             print("(POST) URL:")

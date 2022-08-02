@@ -23,8 +23,7 @@ class URLSignal(signal_base.SimpleSignalType, signal_base.StrMatcher):
     def match(self, content) -> t.List[signal_base.SignalMatch]:
         ret = []
         for word in content.split():
-            found = self.state.get(word)
-            if found:
+            if found := self.state.get(word):
                 ret.append(
                     signal_base.SignalMatch(found.labels, found.first_descriptor_id)
                 )

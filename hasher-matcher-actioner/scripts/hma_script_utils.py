@@ -281,8 +281,7 @@ class HasherMatcherActionerAPI:
 def get_terraform_outputs(
     directory: str = "/workspaces/ThreatExchange/hasher-matcher-actioner/terraform",
 ):
-    cmd = ["terraform"]
-    cmd.extend(["output", "-json"])
+    cmd = ["terraform", "output", "-json"]
     out = subprocess.check_output(cmd, cwd=directory)
     return json.loads(out)
 
@@ -305,13 +304,12 @@ def get_token(
     pool_id: str,
     client_id: str,
 ):
-    resp = _get_cognito_client().admin_initiate_auth(
+    return _get_cognito_client().admin_initiate_auth(
         AuthFlow="ADMIN_USER_PASSWORD_AUTH",
         AuthParameters={"USERNAME": username, "PASSWORD": pwd},
         UserPoolId=pool_id,
         ClientId=client_id,
     )
-    return resp
 
 
 def create_user(

@@ -81,22 +81,14 @@ class PDQHashIndex(ABC):
         qs = numpy.array(query_vectors)
         limits, _, I = self.faiss_index.range_search(qs, threshhold + 1)
 
-        if return_as_ids:
-            # for custom ids, we understood them initially as uint64 numbers and then coerced them internally to be signed
-            # int64s, so we need to reverse this before returning them back to the caller. For non custom ids, this will
-            # effectively return the same result
-            output_fn = int64_to_uint64
-        else:
-            output_fn = self.hash_at
-
+        output_fn = int64_to_uint64 if return_as_ids else self.hash_at
         return [
             [output_fn(idx.item()) for idx in I[limits[i] : limits[i + 1]]]
             for i in range(len(query_vectors))
         ]
 
     def __getstate__(self):
-        data = faiss.serialize_index_binary(self.faiss_index)
-        return data
+        return faiss.serialize_index_binary(self.faiss_index)
 
     def __setstate__(self, data):
         self.faiss_index = faiss.deserialize_index_binary(data)
@@ -225,10 +217,7 @@ class PDQMultiHashIndex(PDQHashIndex):
 
     def hash_at(self, idx: int):
         i64_id = uint64_to_int64(idx)
-        if self.index_rev_map:
-            index_id = self.index_rev_map[i64_id]
-        else:
-            index_id = i64_id
+        index_id = self.index_rev_map[i64_id] if self.index_rev_map else i64_id
         vector = self.mih_index.storage.reconstruct(index_id)
         return binascii.hexlify(vector.tobytes()).decode()
 

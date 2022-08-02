@@ -41,10 +41,11 @@ class ActionRuleEvaluationTestCase(unittest.TestCase):
             ActionRule(
                 enqueue_for_review_action_label.value,
                 enqueue_for_review_action_label,
-                set([BankIDClassificationLabel(bank_id)]),
-                set([ClassificationLabel("Foo")]),
+                {BankIDClassificationLabel(bank_id)},
+                {ClassificationLabel("Foo")},
             )
         ]
+
 
         action_label_to_action_rules: t.Dict[
             ActionLabel, t.List[ActionRule]
@@ -74,29 +75,26 @@ class ActionRuleEvaluationTestCase(unittest.TestCase):
             ActionRule(
                 name="Enqueue Mini-Castle for Review",
                 action_label=enqueue_mini_castle_for_review_action_label,
-                must_have_labels=set(
-                    [
-                        BankIDClassificationLabel("303636684709969"),
-                        ClassificationLabel("true_positive"),
-                    ]
-                ),
-                must_not_have_labels=set(
-                    [BankedContentIDClassificationLabel("3364504410306721")]
-                ),
+                must_have_labels={
+                    BankIDClassificationLabel("303636684709969"),
+                    ClassificationLabel("true_positive"),
+                },
+                must_not_have_labels={
+                    BankedContentIDClassificationLabel("3364504410306721")
+                },
             ),
             ActionRule(
                 name="Enqueue Sailboat for Review",
                 action_label=enqueue_sailboat_for_review_action_label,
-                must_have_labels=set(
-                    [
-                        BankIDClassificationLabel("303636684709969"),
-                        ClassificationLabel("true_positive"),
-                        BankedContentIDClassificationLabel("3364504410306721"),
-                    ]
-                ),
+                must_have_labels={
+                    BankIDClassificationLabel("303636684709969"),
+                    ClassificationLabel("true_positive"),
+                    BankedContentIDClassificationLabel("3364504410306721"),
+                },
                 must_not_have_labels=set(),
             ),
         ]
+
 
         mini_castle_banked_signal = BankedSignal(
             banked_content_id="4169895076385542",

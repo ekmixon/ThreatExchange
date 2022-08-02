@@ -155,17 +155,14 @@ class ThreatExchangeS3Adapter:
         return [
             (
                 row["hash"],
-                # Also add hash to metadata for easy look up on match
                 {
                     "id": int(row["indicator_id"]),
                     "hash": row["hash"],
-                    "source": self.config.SOURCE_STR,  # default for now to make downstream easier to generalize
-                    "privacy_groups": set(
-                        [privacy_group]
-                    ),  # read privacy group from key
+                    "source": self.config.SOURCE_STR,
+                    "privacy_groups": {privacy_group},
                     "tags": {privacy_group: row["tags"].split(" ")}
                     if row["tags"]
-                    else {},  # note: these are the labels assigned by pytx in descriptor.py (NOT a 1-1 with tags on TE)
+                    else {},
                 },
             )
             for row in data_reader
@@ -201,7 +198,7 @@ class ThreatExchangeS3VideoMD5Adapter(ThreatExchangeS3Adapter):
         # because adapters do not write data, they only read data. One datafile
         # read and write are both done via s3_adapters, this should no longer be
         # necessary.
-        return f"hash_video_md5.te"
+        return "hash_video_md5.te"
 
     @property
     def indicator_type_file_columns(self):
@@ -262,8 +259,9 @@ class ThreatUpdateS3Store(tu.ThreatUpdatesStore):
         indicator_types = []
 
         for signal_type in supported_signal_types:
-            indicator_type = self.indicator_type_str_from_signal_type(signal_type)
-            if indicator_type:
+            if indicator_type := self.indicator_type_str_from_signal_type(
+                signal_type
+            ):
                 indicator_types.append(indicator_type)
             else:
                 warnings.warn(
@@ -313,16 +311,14 @@ class ThreatUpdateS3Store(tu.ThreatUpdatesStore):
             # signal_type
             return None
 
-        for signal_type in KNOWN_SIGNAL_TYPES:
-            if signal_type.INDICATOR_TYPE.lower() == extension:
-                return signal_type
-
-        # Hardcode for HASH_VIDEO_MD5 because threatexchange's VideoMD5 still
-        # has HASH_MD5 as indicator_type
-        if extension == "hash_video_md5":
-            return VideoMD5Signal
-
-        return None
+        return next(
+            (
+                signal_type
+                for signal_type in KNOWN_SIGNAL_TYPES
+                if signal_type.INDICATOR_TYPE.lower() == extension
+            ),
+            VideoMD5Signal if extension == "hash_video_md5" else None,
+        )
 
     @property
     def next_delta(self) -> tu.ThreatUpdatesDelta:
@@ -421,15 +417,16 @@ class ThreatUpdateS3Store(tu.ThreatUpdatesStore):
                     )
                 else:
                     csv.field_size_limit(65535)  # dodge field size problems
-                    for row in csv.reader(txt_content):
-                        items.append(
-                            HMASerialization(
-                                row[0],
-                                indicator_type,
-                                row[1],
-                                SimpleDescriptorRollup.from_row(row[2:]),
-                            )
+                    items.extend(
+                        HMASerialization(
+                            row[0],
+                            indicator_type,
+                            row[1],
+                            SimpleDescriptorRollup.from_row(row[2:]),
                         )
+                        for row in csv.reader(txt_content)
+                    )
+
                     logger.info("%d rows loaded for %d", len(items), self.privacy_group)
 
             # Do all in one assignment just in case of threads
@@ -517,11 +514,9 @@ class ThreatUpdateS3Store(tu.ThreatUpdatesStore):
                 and metadata.pending_opinion_change
                 == PendingThreatExchangeOpinionChange.MARK_FALSE_POSITIVE
             )
-            or (
-                new_opinion == []
-                and metadata.pending_opinion_change
-                == PendingThreatExchangeOpinionChange.REMOVE_OPINION
-            )
+            or not new_opinion
+            and metadata.pending_opinion_change
+            == PendingThreatExchangeOpinionChange.REMOVE_OPINION
         ):
             return PendingThreatExchangeOpinionChange.NONE
         else:

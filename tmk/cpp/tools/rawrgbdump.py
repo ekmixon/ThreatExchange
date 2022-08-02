@@ -45,7 +45,5 @@ try:
     for filename in sys.argv[1:]:
         dump_vstr(filename, height, width)
 except IOError as e:
-    if e.errno == errno.EPIPE:
-        pass  # e.g. we were piped to head which is harmless
-    else:
+    if e.errno != errno.EPIPE:
         raise e

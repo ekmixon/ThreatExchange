@@ -82,11 +82,7 @@ Options:
         options = self.getDefaultOptions()
         subcommandHandlerFactory = SubcommandHandlerFactory()
 
-        while True:
-            if len(args) == 0:
-                break
-            if args[0][0] != "-":
-                break
+        while len(args) != 0 and args[0][0] == "-":
             option = args[0]
             args = args[1:]
 
@@ -94,28 +90,28 @@ Options:
                 self.usage(0)
             elif option == "--help":
                 self.usage(0)
-            elif option == "-l" or option == "--list-verbs":
+            elif option in ["-l", "--list-verbs"]:
                 SubcommandHandlerFactory.listVerbs()
                 sys.exit(0)
 
-            elif option == "-v" or option == "--verbose":
+            elif option in ["-v", "--verbose"]:
                 options["verbose"] = True
-            elif option == "-q" or option == "--quiet":
+            elif option in ["-q", "--quiet"]:
                 options["verbose"] = False
-            elif option == "-s" or option == "--show-urls":
+            elif option in ["-s", "--show-urls"]:
                 options["showURLs"] = True
-            elif option == "-a" or option == "--app-token-env-name":
+            elif option in ["-a", "--app-token-env-name"]:
                 if len(args) < 1:
                     self.usage(1)
                 options["accessTokenEnvName"] = args[0]
                 args = args[1:]
-            elif option == "-b" or option == "--base-te-url":
+            elif option in ["-b", "--base-te-url"]:
                 if len(args) < 1:
                     self.usage(1)
                 options["baseTEURL"] = args[0]
                 args = args[1:]
             else:
-                eprint("%s: unrecognized  option %s" % (self.progName, option))
+                eprint(f"{self.progName}: unrecognized  option {option}")
                 sys.exit(1)
 
         if len(args) < 1:
@@ -134,7 +130,7 @@ Options:
 
         subcommandHandler = subcommandHandlerFactory.create(self.progName, verbName)
         if subcommandHandler is None:
-            eprint("%s: unrecognized verb %s" % (self.progName, verbName))
+            eprint(f"{self.progName}: unrecognized verb {verbName}")
             sys.exit(1)
         subcommandHandler.handle(args, options)
 
@@ -167,9 +163,9 @@ class SubcommandHandlerFactory:
 
     # Static method
     @classmethod
-    def listVerbs(self):
+    def listVerbs(cls):
         print("Verbs:")
-        for keyValuePair in self.VERB_NAMES.items():
+        for keyValuePair in cls.VERB_NAMES.items():
             key = keyValuePair[0]
             print(key)
 
@@ -216,10 +212,8 @@ class LookUpTagIDHandler(SubcommandHandler):
         sys.exit(exitCode)
 
     def handle(self, args, options):
-        pass
-        if len(args) >= 1:
-            if args[0] == "-h" or args[0] == "--help":
-                self.usage(0)
+        if len(args) >= 1 and args[0] in ["-h", "--help"]:
+            self.usage(0)
 
         if len(args) != 1:
             self.usage(1)
@@ -260,11 +254,7 @@ Options:
         options["includeIndicatorInOutput"] = True
         options["pageSize"] = 10
 
-        while True:
-            if len(args) == 0:
-                break
-            if args[0][0] != "-":
-                break
+        while len(args) != 0 and args[0][0] == "-":
             option = args[0]
             args = args[1:]
 
@@ -291,10 +281,7 @@ Options:
                 args = args[1:]
 
             else:
-                eprint(
-                    "%s %s: unrecognized  option %s"
-                    % (self.progName, self.verbName, option)
-                )
+                eprint(f"{self.progName} {self.verbName}: unrecognized  option {option}")
                 sys.exit(1)
 
         if len(args) != 1:
@@ -322,7 +309,7 @@ Options:
         )
 
     @classmethod
-    def IDProcessor(self, idBatch):
+    def IDProcessor(cls, idBatch):
         for id in idBatch:
             print(id)
 
@@ -350,11 +337,7 @@ after the options.
         options["includeIndicatorInOutput"] = True
         options["pageSize"] = 10
 
-        while True:
-            if len(args) == 0:
-                break
-            if args[0][0] != "-":
-                break
+        while len(args) != 0 and args[0][0] == "-":
             option = args[0]
             args = args[1:]
 
@@ -385,10 +368,7 @@ after the options.
                 options["includeIndicatorInOutput"] = False
 
             else:
-                eprint(
-                    "%s %s: unrecognized  option %s"
-                    % (self.progName, self.verbName, option)
-                )
+                eprint(f"{self.progName} {self.verbName}: unrecognized  option {option}")
                 sys.exit(1)
 
         ids = []
@@ -450,11 +430,7 @@ Options:
         options["includeIndicatorInOutput"] = True
         options["pageSize"] = 10
 
-        while True:
-            if len(args) == 0:
-                break
-            if args[0][0] != "-":
-                break
+        while len(args) != 0 and args[0][0] == "-":
             option = args[0]
             args = args[1:]
 
@@ -496,10 +472,7 @@ Options:
                 options["includeIndicatorInOutput"] = False
 
             else:
-                eprint(
-                    "%s %s: unrecognized  option %s"
-                    % (self.progName, self.verbName, option)
-                )
+                eprint(f"{self.progName} {self.verbName}: unrecognized  option {option}")
                 sys.exit(1)
 
         if len(args) != 1:
@@ -524,9 +497,9 @@ Options:
         if options.get("createdSince") != None:
             if options.get("taggedSince") != None:
                 eprint(
-                    "%s %s: Please specify at most one of --tagged-since and --created-since."
-                    % (self.progName, self.verbName)
+                    f"{self.progName} {self.verbName}: Please specify at most one of --tagged-since and --created-since."
                 )
+
                 sys.exit(1)
             options["taggedSince"] = options["createdSince"]
             options["createdSinceEpochSeconds"] = TE.Net.parseTimeStringToEpochSeconds(
@@ -535,9 +508,9 @@ Options:
         if options.get("createdUntil") != None:
             if options.get("taggedUntil") != None:
                 eprint(
-                    "%s %s: Please specify at most one of --tagged-until and --created-until."
-                    % (self.progName, self.verbName)
+                    f"{self.progName} {self.verbName}: Please specify at most one of --tagged-until and --created-until."
                 )
+
                 sys.exit(1)
             # keep options['taggedUntil'] = None
             options["createdUntilEpochSeconds"] = TE.Net.parseTimeStringToEpochSeconds(
@@ -566,7 +539,7 @@ Options:
         )
 
     @classmethod
-    def IDProcessor(self, idBatch, options):
+    def IDProcessor(cls, idBatch, options):
         descriptors = TE.Net.getInfoForIDs(
             idBatch,
             verbose=options["verbose"],
@@ -583,15 +556,17 @@ Options:
             descriptorCreatedAtEpochSeconds = TE.Net.parseTimeStringToEpochSeconds(
                 descriptor["added_on"]
             )
-            if createdSinceEpochSeconds != None:
-                if descriptorCreatedAtEpochSeconds < createdSinceEpochSeconds:
-                    continue
-            if createdUntilEpochSeconds != None:
-                if descriptorCreatedAtEpochSeconds > createdUntilEpochSeconds:
-                    continue
-
-            # Stub processing -- one would perhaps integrate with one's own system
-            print(json.dumps(descriptor))
+            if (
+                createdSinceEpochSeconds != None
+                and descriptorCreatedAtEpochSeconds < createdSinceEpochSeconds
+            ):
+                continue
+            if (
+                createdUntilEpochSeconds is None
+                or descriptorCreatedAtEpochSeconds <= createdUntilEpochSeconds
+            ):
+                # Stub processing -- one would perhaps integrate with one's own system
+                print(json.dumps(descriptor))
 
 
 # ================================================================
@@ -642,11 +617,7 @@ https://developers.facebook.com/docs/threat-exchange/reference/apis/threat-descr
     def handle(self, args, options):
         urlParams = {}
 
-        while True:
-            if len(args) == 0:
-                break
-            if args[0][0] != "-":
-                break
+        while len(args) != 0 and args[0][0] == "-":
             option = args[0]
             args = args[1:]
 
@@ -655,7 +626,7 @@ https://developers.facebook.com/docs/threat-exchange/reference/apis/threat-descr
             elif option == "--help":
                 self.usage(0)
 
-            elif option == "--limit" or option == 'page-size':
+            elif option in ["--limit", 'page-size']:
                 if len(args) < 1:
                     self.usage(1)
                 urlParams["limit"] = args[0]
@@ -712,7 +683,7 @@ https://developers.facebook.com/docs/threat-exchange/reference/apis/threat-descr
             elif option == "--strict-text":
                 urlParams["strict_text"] = 'true'
 
-            elif option == "--tag" or option == "--tags":
+            elif option in ["--tag", "--tags"]:
                 if len(args) < 1:
                     self.usage(1)
                 urlParams["tags"] = args[0]
@@ -727,7 +698,7 @@ https://developers.facebook.com/docs/threat-exchange/reference/apis/threat-descr
                 urlParams["text"] = args[0]
                 args = args[1:]
 
-            elif option == "--type" or option == "--indicator-type":
+            elif option in ["--type", "--indicator-type"]:
                 if len(args) < 1:
                     self.usage(1)
                 urlParams["type"] = args[0]
@@ -740,17 +711,17 @@ https://developers.facebook.com/docs/threat-exchange/reference/apis/threat-descr
                 args = args[1:]
 
             else:
-                eprint(
-                    "%s %s: unrecognized  option %s"
-                    % (self.progName, self.verbName, option)
-                )
+                eprint(f"{self.progName} {self.verbName}: unrecognized  option {option}")
                 sys.exit(1)
 
         if urlParams.get('since') is None:
-            eprint("%s %s: --since is required" % (self.progName, self.verbName))
+            eprint(f"{self.progName} {self.verbName}: --since is required")
             self.usage(1)
         if len(args) > 0:
-            eprint("%s %s: extraneous argument(s) %s" % (self.progName, self.verbName, ", ".join(args)))
+            eprint(
+                f'{self.progName} {self.verbName}: extraneous argument(s) {", ".join(args)}'
+            )
+
             self.usage(1)
 
         descriptorBatchProcessor = lambda descriptorBatch: self.DescriptorBatchProcessor(descriptorBatch, options)
@@ -781,9 +752,8 @@ the next-page URL and repeats until there are no more pages.
         sys.exit(exitCode)
 
     def handle(self, args, options):
-        if len(args) >= 1:
-            if args[0] == "-h" or args[0] == "--help":
-                self.usage(0)
+        if len(args) >= 1 and args[0] in ["-h", "--help"]:
+            self.usage(0)
         if len(args) != 1:
             self.usage(1)
 
@@ -800,11 +770,7 @@ the next-page URL and repeats until there are no more pages.
             if data is None:
                 eprint("No data field found in response JSON.")
                 break
-            if paging is None:
-                nextURL = None
-            else:
-                nextURL = paging.get("next", None)
-
+            nextURL = None if paging is None else paging.get("next", None)
             print(json.dumps(data))
 
 
@@ -934,44 +900,44 @@ See also https://developers.facebook.com/docs/threat-exchange/reference/reacting
 
         handled = True
 
-        if option == "-d" or option == "--description":
+        if option in ["-d", "--description"]:
             if len(args) < 1:
                 self.usage(1)
             postParams[names["description"]] = args[0]
             args = args[1:]
 
-        elif option == "-l" or option == "--share-level":
+        elif option in ["-l", "--share-level"]:
             if len(args) < 1:
                 self.usage(1)
             postParams[names["share_level"]] = args[0]
             args = args[1:]
-        elif option == "-p" or option == "--privacy-type":
+        elif option in ["-p", "--privacy-type"]:
             if len(args) < 1:
                 self.usage(1)
             postParams[names["privacy_type"]] = args[0]
             args = args[1:]
-        elif option == "-m" or option == "--privacy-members":
+        elif option in ["-m", "--privacy-members"]:
             if len(args) < 1:
                 self.usage(1)
             postParams[names["privacy_members"]] = args[0]
             args = args[1:]
 
-        elif option == "-s" or option == "--status":
+        elif option in ["-s", "--status"]:
             if len(args) < 1:
                 self.usage(1)
             postParams[names["status"]] = args[0]
             args = args[1:]
-        elif option == "-r" or option == "--review-status":
+        elif option in ["-r", "--review-status"]:
             if len(args) < 1:
                 self.usage(1)
             postParams[names["review_status"]] = args[0]
             args = args[1:]
-        elif option == "-y" or option == "--severity":
+        elif option in ["-y", "--severity"]:
             if len(args) < 1:
                 self.usage(1)
             postParams[names["severity"]] = args[0]
             args = args[1:]
-        elif option == "-c" or option == "--confidence":
+        elif option in ["-c", "--confidence"]:
             if len(args) < 1:
                 self.usage(1)
             postParams[names["confidence"]] = args[0]
@@ -1037,11 +1003,7 @@ class SubmitHandler(AbstractPostSubcommandHandler):
         # Local keystroke-saver for this enum
         names = TE.Net.POST_PARAM_NAMES
 
-        while True:
-            if len(args) == 0:
-                break
-            if args[0][0] != "-":
-                break
+        while len(args) != 0 and args[0][0] == "-":
             option = args[0]
             args = args[1:]
 
@@ -1055,13 +1017,13 @@ class SubmitHandler(AbstractPostSubcommandHandler):
 
             elif option == "-I":
                 options["indicatorTextFromStdin"] = True
-            elif option == "-i" or option == "--indicator":
+            elif option in ["-i", "--indicator"]:
                 if len(args) < 1:
                     self.usage(1)
                 postParams[names["indicator"]] = args[0]
                 args = args[1:]
 
-            elif option == "-t" or option == "--type":
+            elif option in ["-t", "--type"]:
                 if len(args) < 1:
                     self.usage(1)
                 postParams[names["type"]] = args[0]
@@ -1076,10 +1038,7 @@ class SubmitHandler(AbstractPostSubcommandHandler):
             else:
                 handled, args = self.commonPosterOptionCheck(option, args, postParams)
                 if not handled:
-                    eprint(
-                        "%s %s: unrecognized  option %s"
-                        % (self.progName, self.verbName, option)
-                    )
+                    eprint(f"{self.progName} {self.verbName}: unrecognized  option {option}")
                     sys.exit(1)
 
         if len(args) > 0:
@@ -1092,9 +1051,9 @@ class SubmitHandler(AbstractPostSubcommandHandler):
         if options["indicatorTextFromStdin"]:
             if postParams.get(names["indicator"], None) != None:
                 eprint(
-                    "%s %s: only one of -I and -i must be supplied."
-                    % (self.progName, self.verbName)
+                    f"{self.progName} {self.verbName}: only one of -I and -i must be supplied."
                 )
+
                 sys.exit(1)
             while True:
                 # Python line-reader returns the trailing newlines so
@@ -1110,11 +1069,11 @@ class SubmitHandler(AbstractPostSubcommandHandler):
                     options["dryRun"],
                 )
         else:
-            if postParams.get(names["indicator"], None) == None:
+            if postParams.get(names["indicator"], None) is None:
                 eprint(
-                    "%s %s: only one of -I and -i must be supplied."
-                    % (self.progName, self.verbName)
+                    f"{self.progName} {self.verbName}: only one of -I and -i must be supplied."
                 )
+
                 sys.exit(1)
             self.submitSingle(
                 postParams, options["verbose"], options["showURLs"], options["dryRun"]
@@ -1159,11 +1118,7 @@ class UpdateHandler(AbstractPostSubcommandHandler):
         # Local keystroke-saver for this enum
         names = TE.Net.POST_PARAM_NAMES
 
-        while True:
-            if len(args) == 0:
-                break
-            if args[0][0] != "-":
-                break
+        while len(args) != 0 and args[0][0] == "-":
             option = args[0]
             args = args[1:]
 
@@ -1202,10 +1157,7 @@ class UpdateHandler(AbstractPostSubcommandHandler):
             else:
                 handled, args = self.commonPosterOptionCheck(option, args, postParams)
                 if not handled:
-                    eprint(
-                        "%s %s: unrecognized  option %s"
-                        % (self.progName, self.verbName, option)
-                    )
+                    eprint(f"{self.progName} {self.verbName}: unrecognized  option {option}")
                     sys.exit(1)
 
         if len(args) > 0:
@@ -1218,9 +1170,9 @@ class UpdateHandler(AbstractPostSubcommandHandler):
         if options["descriptorIDsFromStdin"]:
             if postParams.get(names["descriptor_id"], None) != None:
                 eprint(
-                    "%s %s: only one of -N and -n must be supplied."
-                    % (self.progName, self.verbName)
+                    f"{self.progName} {self.verbName}: only one of -N and -n must be supplied."
                 )
+
                 sys.exit(1)
             while True:
                 # Python line-reader returns the trailing newlines so
@@ -1236,11 +1188,11 @@ class UpdateHandler(AbstractPostSubcommandHandler):
                     options["dryRun"],
                 )
         else:
-            if postParams.get(names["descriptor_id"], None) == None:
+            if postParams.get(names["descriptor_id"], None) is None:
                 eprint(
-                    "%s %s: only one of -N and -n must be supplied."
-                    % (self.progName, self.verbName)
+                    f"{self.progName} {self.verbName}: only one of -N and -n must be supplied."
                 )
+
                 sys.exit(1)
             self.updateSingle(
                 postParams, options["verbose"], options["showURLs"], options["dryRun"]
@@ -1285,11 +1237,7 @@ class CopyHandler(AbstractPostSubcommandHandler):
         # Local keystroke-saver for this enum
         names = TE.Net.POST_PARAM_NAMES
 
-        while True:
-            if len(args) == 0:
-                break
-            if args[0][0] != "-":
-                break
+        while len(args) != 0 and args[0][0] == "-":
             option = args[0]
             args = args[1:]
 
@@ -1309,13 +1257,13 @@ class CopyHandler(AbstractPostSubcommandHandler):
                 postParams[names["descriptor_id"]] = args[0]
                 args = args[1:]
 
-            elif option == "-i" or option == "--indicator":
+            elif option in ["-i", "--indicator"]:
                 if len(args) < 1:
                     self.usage(1)
                 postParams[names["indicator"]] = args[0]
                 args = args[1:]
 
-            elif option == "-t" or option == "--type":
+            elif option in ["-t", "--type"]:
                 if len(args) < 1:
                     self.usage(1)
                 postParams[names["type"]] = args[0]
@@ -1330,10 +1278,7 @@ class CopyHandler(AbstractPostSubcommandHandler):
             else:
                 handled, args = self.commonPosterOptionCheck(option, args, postParams)
                 if not handled:
-                    eprint(
-                        "%s %s: unrecognized  option %s"
-                        % (self.progName, self.verbName, option)
-                    )
+                    eprint(f"{self.progName} {self.verbName}: unrecognized  option {option}")
                     sys.exit(1)
 
         if len(args) > 0:
@@ -1346,9 +1291,9 @@ class CopyHandler(AbstractPostSubcommandHandler):
         if options["descriptorIDsFromStdin"]:
             if postParams.get(names["descriptor_id"], None) != None:
                 eprint(
-                    "%s %s: only one of -N and -n must be supplied."
-                    % (self.progName, self.verbName)
+                    f"{self.progName} {self.verbName}: only one of -N and -n must be supplied."
                 )
+
                 sys.exit(1)
             while True:
                 # Python line-reader returns the trailing newlines so
@@ -1364,11 +1309,11 @@ class CopyHandler(AbstractPostSubcommandHandler):
                     options["dryRun"],
                 )
         else:
-            if postParams.get(names["descriptor_id"], None) == None:
+            if postParams.get(names["descriptor_id"], None) is None:
                 eprint(
-                    "%s %s: only one of -N and -n must be supplied."
-                    % (self.progName, self.verbName)
+                    f"{self.progName} {self.verbName}: only one of -N and -n must be supplied."
                 )
+
                 sys.exit(1)
             self.copySingle(
                 postParams, options["verbose"], options["showURLs"], options["dryRun"]

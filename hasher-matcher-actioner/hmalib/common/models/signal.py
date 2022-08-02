@@ -95,7 +95,7 @@ class ThreatExchangeSignalMetadata(DynamoDBItem):
     PROJECTION_EXPRESSION = "PK, SignalHash, SignalSource, SignalType, PrivacyGroup, Tags, PendingThreatExchangeOpinionChange, UpdatedAt"
 
     @classmethod
-    def get_sort_key(self, privacy_group_id: str) -> str:
+    def get_sort_key(cls, privacy_group_id: str) -> str:
         return f"pg#{privacy_group_id}"
 
     def to_json(self) -> t.Dict:

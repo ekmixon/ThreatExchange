@@ -57,10 +57,10 @@ def dump_feat(filename):
         frame_feature_dimension = struct.unpack('i', frame_feature_dimension)[0]
         frames_per_second = struct.unpack('i', frames_per_second)[0]
 
-        print("filename                      %s" % filename)
-        print("project_magic                 %s" % project_magic)
-        print("file_type_magic               %s" % file_type_magic)
-        print("frame_feature_algorithm_magic %s" % frame_feature_algorithm_magic)
+        print(f"filename                      {filename}")
+        print(f"project_magic                 {project_magic}")
+        print(f"file_type_magic               {file_type_magic}")
+        print(f"frame_feature_algorithm_magic {frame_feature_algorithm_magic}")
         print("frame_feature_dimension       %d" % frame_feature_dimension)
         print("frames_per_second             %d" % frames_per_second)
 
@@ -81,7 +81,5 @@ try:
     for filename in sys.argv[1:]:
         dump_feat(filename)
 except IOError as e:
-    if e.errno == errno.EPIPE:
-        pass  # e.g. we were piped to head which is harmless
-    else:
+    if e.errno != errno.EPIPE:
         raise e

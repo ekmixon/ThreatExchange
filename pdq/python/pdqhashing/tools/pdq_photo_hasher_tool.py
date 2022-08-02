@@ -131,9 +131,7 @@ class PDQPhotoHasherTool:
                     sys.stdout.flush()
                 exit(0)
             except IOError:
-                sys.stderr.write(
-                    "{}: couldn't read line {} \n".format(cls.PROGNAME, lno)
-                )
+                sys.stderr.write(f"{cls.PROGNAME}: couldn't read line {lno} \n")
                 exit(1)
 
         for filename in args.filenames:
@@ -179,10 +177,9 @@ class PDQPhotoHasherTool:
             except IOError as e:
                 context.hadError = True
                 sys.stderr.write(
-                    "{}: could not read image file {}, Error {}\n".format(
-                        cls.PROGNAME, filename, e
-                    )
+                    f"{cls.PROGNAME}: could not read image file {filename}, Error {e}\n"
                 )
+
                 if keepGoingAfterErrors:
                     return
                 else:
@@ -197,18 +194,16 @@ class PDQPhotoHasherTool:
                 delta = hash.hammingDistance(context.pdqHashPrev)
 
             if not doDetailedOutput:
-                print("{},{},{}".format(hash, quality, filename))
+                print(f"{hash},{quality},{filename}")
             else:
-                output = "hash={},norm={},delta={},quality={}".format(
-                    hash, norm, delta, quality
-                )
+                output = f"hash={hash},norm={norm},delta={delta},quality={quality}"
                 if doTimings:
                     output += ",dims={},readSeconds={:.6f},hashSeconds={:.6f}".format(
                         hashingMetadata.imageHeightTimesWidth,
                         hashingMetadata.readSeconds,
                         hashingMetadata.hashSeconds,
                     )
-                output += ",filename={}".format(filename)
+                output += f",filename={filename}"
                 print(output)
             context.pdqHashPrev = hash
         if doPDQDih:
@@ -225,119 +220,44 @@ class PDQPhotoHasherTool:
                     return
                 else:
                     exit(1)
-            if not doDetailedOutput:
+            if doDetailedOutput:
+                output = f"hash={dihedralBag.hash},quality={dihedralBag.quality}"
+                if doTimings:
+                    output += ",dims={},readSeconds={:.6f},hashSeconds={:.6f}".format(
+                        hashingMetadata.imageHeightTimesWidth,
+                        hashingMetadata.readSeconds,
+                        hashingMetadata.hashSeconds,
+                    )
                 if doPDQDihAcross:
-                    print(
-                        "{},{},{},{},{},{},{},{},{},{}".format(
-                            dihedralBag.hash,
-                            dihedralBag.hashRotate90,
-                            dihedralBag.hashRotate180,
-                            dihedralBag.hashRotate270,
-                            dihedralBag.hashFlipX,
-                            dihedralBag.hashFlipY,
-                            dihedralBag.hashFlipPlus1,
-                            dihedralBag.hashFlipMinus1,
-                            dihedralBag.quality,
-                            filename,
-                        )
-                    )
+                    output += f",orig={dihedralBag.hash},rot90={dihedralBag.hashRotate90},rot180={dihedralBag.hashRotate180},,rot270={dihedralBag.hashRotate270},flipx={dihedralBag.hashFlipX},flipy={dihedralBag.hashFlipY},flipp={dihedralBag.hashFlipPlus1},flipm={dihedralBag.hashFlipMinus1},filename={filename}"
+
+                    print(output)
                 else:
-                    bquality = dihedralBag.quality
-                    print("{},{},{}".format(dihedralBag.hash, bquality, filename))
-                    print(
-                        "{},{},{}".format(dihedralBag.hashRotate90, bquality, filename)
-                    )
-                    print(
-                        "{},{},{}".format(dihedralBag.hashRotate180, bquality, filename)
-                    )
-                    print(
-                        "{},{},{}".format(dihedralBag.hashRotate270, bquality, filename)
-                    )
-                    print("{},{},{}".format(dihedralBag.hashFlipX, bquality, filename))
-                    print("{},{},{}".format(dihedralBag.hashFlipY, bquality, filename))
-                    print(
-                        "{},{},{}".format(dihedralBag.hashFlipPlus1, bquality, filename)
-                    )
-                    print(
-                        "{},{},{}".format(
-                            dihedralBag.hashFlipMinus1, bquality, filename
-                        )
-                    )
+                    output += f",filename={filename}"
+                    print(output)
+                    print(f"hash={dihedralBag.hash},xform=orig,filename={filename}")
+                    print(f"hash={dihedralBag.hashRotate90},xform=rot90,filename={filename}")
+                    print(f"hash={dihedralBag.hashRotate180},xform=rot180,filename={filename}")
+                    print(f"hash={dihedralBag.hashRotate270},xform=rot270,filename={filename}")
+                    print(f"hash={dihedralBag.hashFlipX},xform=flipx,filename={filename}")
+                    print(f"hash={dihedralBag.hashFlipY},xform=flipy,filename={filename}")
+                    print(f"hash={dihedralBag.hashFlipPlus1},xform=flipp,filename={filename}")
+                    print(f"hash={dihedralBag.hashFlipMinus1},xform=flipm,filename={filename}")
+            elif doPDQDihAcross:
+                print(
+                    f"{dihedralBag.hash},{dihedralBag.hashRotate90},{dihedralBag.hashRotate180},{dihedralBag.hashRotate270},{dihedralBag.hashFlipX},{dihedralBag.hashFlipY},{dihedralBag.hashFlipPlus1},{dihedralBag.hashFlipMinus1},{dihedralBag.quality},{filename}"
+                )
+
             else:
-                if doPDQDihAcross:
-                    output = "hash={},quality={}".format(
-                        dihedralBag.hash, dihedralBag.quality
-                    )
-                    if doTimings:
-                        output += ",dims={},readSeconds={:.6f},hashSeconds={:.6f}".format(
-                            hashingMetadata.imageHeightTimesWidth,
-                            hashingMetadata.readSeconds,
-                            hashingMetadata.hashSeconds,
-                        )
-                    output += ",orig={},rot90={},rot180={},,rot270={},flipx={},flipy={},flipp={},flipm={},filename={}".format(
-                        dihedralBag.hash,
-                        dihedralBag.hashRotate90,
-                        dihedralBag.hashRotate180,
-                        dihedralBag.hashRotate270,
-                        dihedralBag.hashFlipX,
-                        dihedralBag.hashFlipY,
-                        dihedralBag.hashFlipPlus1,
-                        dihedralBag.hashFlipMinus1,
-                        filename,
-                    )
-                    print(output)
-                else:
-                    output = "hash={},quality={}".format(
-                        dihedralBag.hash, dihedralBag.quality
-                    )
-                    if doTimings:
-                        output += ",dims={},readSeconds={:.6f},hashSeconds={:.6f}".format(
-                            hashingMetadata.imageHeightTimesWidth,
-                            hashingMetadata.readSeconds,
-                            hashingMetadata.hashSeconds,
-                        )
-                    output += ",filename={}".format(filename)
-                    print(output)
-                    print(
-                        "hash={},xform=orig,filename={}".format(
-                            dihedralBag.hash, filename
-                        )
-                    )
-                    print(
-                        "hash={},xform=rot90,filename={}".format(
-                            dihedralBag.hashRotate90, filename
-                        )
-                    )
-                    print(
-                        "hash={},xform=rot180,filename={}".format(
-                            dihedralBag.hashRotate180, filename
-                        )
-                    )
-                    print(
-                        "hash={},xform=rot270,filename={}".format(
-                            dihedralBag.hashRotate270, filename
-                        )
-                    )
-                    print(
-                        "hash={},xform=flipx,filename={}".format(
-                            dihedralBag.hashFlipX, filename
-                        )
-                    )
-                    print(
-                        "hash={},xform=flipy,filename={}".format(
-                            dihedralBag.hashFlipY, filename
-                        )
-                    )
-                    print(
-                        "hash={},xform=flipp,filename={}".format(
-                            dihedralBag.hashFlipPlus1, filename
-                        )
-                    )
-                    print(
-                        "hash={},xform=flipm,filename={}".format(
-                            dihedralBag.hashFlipMinus1, filename
-                        )
-                    )
+                bquality = dihedralBag.quality
+                print(f"{dihedralBag.hash},{bquality},{filename}")
+                print(f"{dihedralBag.hashRotate90},{bquality},{filename}")
+                print(f"{dihedralBag.hashRotate180},{bquality},{filename}")
+                print(f"{dihedralBag.hashRotate270},{bquality},{filename}")
+                print(f"{dihedralBag.hashFlipX},{bquality},{filename}")
+                print(f"{dihedralBag.hashFlipY},{bquality},{filename}")
+                print(f"{dihedralBag.hashFlipPlus1},{bquality},{filename}")
+                print(f"{dihedralBag.hashFlipMinus1},{bquality},{filename}")
             context.pdqHashPrev = dihedralBag.hash.clone()
 
 

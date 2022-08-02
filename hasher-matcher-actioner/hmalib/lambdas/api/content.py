@@ -239,13 +239,14 @@ def get_content_api(
         record = PipelineHashRecord.get_from_content_id(
             dynamodb_table, f"{content_id}"
         )[0]
-        if not record:
-            return None
-
-        return HashResultResponse(
-            content_id=record.content_id,
-            content_hash=record.content_hash,
-            updated_at=record.updated_at.isoformat(),
+        return (
+            HashResultResponse(
+                content_id=record.content_id,
+                content_hash=record.content_hash,
+                updated_at=record.updated_at.isoformat(),
+            )
+            if record
+            else None
         )
 
     @content_api.get("/preview-url/", apply=[jsoninator])

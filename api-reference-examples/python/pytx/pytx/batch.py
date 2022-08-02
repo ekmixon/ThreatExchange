@@ -46,8 +46,7 @@ class Batch(object):
                                    request.get('method', 'GET')),
              b.RELATIVE_URL: Batch.get_relative(request.get('url',
                                                             request.get('relative_url', '')))}
-        body = request.get('body', None)
-        if body:
+        if body := request.get('body', None):
             d[b.BODY] = body
         if name:
             d['name'] = name
@@ -90,32 +89,33 @@ class Batch(object):
         :returns: dict (using json.loads())
         """
 
-        batch = []
-        retries = kwargs.get('retries', None)
+        retries = kwargs.get('retries')
         if retries:
             del kwargs['retries']
-        headers = kwargs.get('headers', None)
+        headers = kwargs.get('headers')
         if headers:
             del kwargs['headers']
-        proxies = kwargs.get('proxies', None)
+        proxies = kwargs.get('proxies')
         if proxies:
             del kwargs['proxies']
-        verify = kwargs.get('verify', None)
+        verify = kwargs.get('verify')
         if verify:
             del kwargs['verify']
-        include_headers = kwargs.get('include_headers', None)
+        include_headers = kwargs.get('include_headers')
         if include_headers:
             del kwargs['include_headers']
             include_headers = Broker.sanitize_bool(include_headers)
-        omit_response = kwargs.get('omit_response', None)
+        omit_response = kwargs.get('omit_response')
         if omit_response:
             del kwargs['omit_response']
             omit_response = Broker.sanitize_bool(omit_response)
 
-        for arg in args:
-            batch.append(Batch.prepare_single_request(arg))
-        for key, value in kwargs.iteritems():
-            batch.append(Batch.prepare_single_request(value, name=key))
+        batch = [Batch.prepare_single_request(arg) for arg in args]
+        batch.extend(
+            Batch.prepare_single_request(value, name=key)
+            for key, value in kwargs.iteritems()
+        )
+
         params = {t.ACCESS_TOKEN: get_access_token(),
                   t.BATCH: json.dumps(batch),
                   t.INCLUDE_HEADERS: include_headers,

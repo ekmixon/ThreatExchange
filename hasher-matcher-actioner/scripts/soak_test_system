@@ -249,7 +249,7 @@ def generate_latency_stats(
 
     filename = "soak_test_timestamps.txt"
     print(f"Writing times to {filename}")
-    print(f"Format: time_submitted, time_action_recevied, delta_in_seconds")
+    print("Format: time_submitted, time_action_recevied, delta_in_seconds")
     with open(filename, "a") as f:  # append mode
         for record in data:
             f.write(f"{record[1].isoformat()}, {record[0].isoformat()}, {record[2]}\n")
@@ -307,8 +307,9 @@ def start_soak(
             )
         if difference < 0:
             print(
-                f"Negative difference means more action request than submissions were received. (likely bug or multiply actions configured)"
+                "Negative difference means more action request than submissions were received. (likely bug or multiply actions configured)"
             )
+
     else:
         print(f"FINAL TOTAL SUBMITTED: {total_submit}")
 
@@ -317,7 +318,7 @@ def start_soak(
             generate_latency_stats(data)
 
     helper.clean_up_test()
-    print(f"Test Run Complete. Thanks!")
+    print("Test Run Complete. Thanks!")
 
 
 if __name__ == "__main__":

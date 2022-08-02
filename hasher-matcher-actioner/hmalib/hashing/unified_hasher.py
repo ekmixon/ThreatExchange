@@ -59,7 +59,7 @@ class UnifiedHasher:
 
         # Not enforced in typing because python does not yet have t.Intersect,
         # but all supported_signal_types must also implement BytesHasher
-        assert all([issubclass(t, BytesHasher) for t in supported_signal_types])
+        assert all(issubclass(t, BytesHasher) for t in supported_signal_types)
 
         self.supported_signal_types = supported_signal_types
 

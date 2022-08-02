@@ -71,7 +71,7 @@ class ThreatPrivacyGroup(Common):
 
         if role is None:
             raise pytxValueError('Must provide a role')
-        app_id = get_app_id() + '/'
+        app_id = f'{get_app_id()}/'
         if role == 'owner':
             role = t.THREAT_PRIVACY_GROUPS_OWNER
         elif role == 'member':
@@ -122,10 +122,7 @@ class ThreatPrivacyGroup(Common):
                              headers=headers,
                              proxies=proxies,
                              verify=verify)
-        if t.DATA in results:
-            return results[t.DATA]
-        else:
-            return []
+        return results[t.DATA] if t.DATA in results else []
 
     def set_members(self,
                     members=None,

@@ -88,24 +88,20 @@ def access_token(app_id=None, app_secret=None, token_file=None):
 
     # 1. Use the concatenation of the app_id and app_secret parameters
     if app_id and app_secret:
-        __ACCESS_TOKEN = app_id + '|' + app_secret
+        __ACCESS_TOKEN = f'{app_id}|{app_secret}'
         return
 
-    # 2. Use the value of the 'TX_ACCESS_TOKEN' environment variable.
-    __ACCESS_TOKEN = os.environ.get(te.TX_ACCESS_TOKEN, None)
-    if __ACCESS_TOKEN:
+    if __ACCESS_TOKEN := os.environ.get(te.TX_ACCESS_TOKEN, None):
         return
 
     # 3. Use the concatenation of the 'TX_APP_ID' and 'TX_APP_SECRET' environment variables.
     env_app_id = os.environ.get(te.TX_APP_ID, None)
     env_app_secret = os.environ.get(te.TX_APP_SECRET, None)
     if env_app_id and env_app_secret:
-        __ACCESS_TOKEN = env_app_id + '|' + env_app_secret
+        __ACCESS_TOKEN = f'{env_app_id}|{env_app_secret}'
         return
 
-    # 4. Use the first line of the file '$PWD/.pytx' or ~/.pytx'
-    filepath = _find_token_file()
-    if filepath:
+    if filepath := _find_token_file():
         __ACCESS_TOKEN = _read_token_file(filepath)
         return
 

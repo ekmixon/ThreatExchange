@@ -83,7 +83,7 @@ def py_to_aws(py_field: t.Any, in_type: t.Optional[t.Type[T]] = None) -> T:
     if in_type == t.Set[str]:  # SS
         return py_field  # type: ignore # mypy/issues/10003
     if in_type == t.Set[int]:  # SN
-        return {i for i in py_field}  # type: ignore # mypy/issues/10003
+        return set(py_field)
     if in_type == t.Set[float]:  # SN
         # WARNING WARNING
         # floating point is not truly supported in dynamodb

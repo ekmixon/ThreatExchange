@@ -116,14 +116,12 @@ class MatchCommand(command_base.Command):
         no_stderr=False,
     ) -> t.Generator[t.Union[str, pathlib.Path], None, None]:
         def interpret_token(
-            tok: str,
-        ) -> t.Generator[t.Union[str, pathlib.Path], None, None]:
+                tok: str,
+            ) -> t.Generator[t.Union[str, pathlib.Path], None, None]:
             if force_input_to_text:
                 return tok
             path = pathlib.Path(token)
-            if path.exists():
-                return path
-            return tok
+            return path if path.exists() else tok
 
         for token in input_:
             token = token.rstrip()

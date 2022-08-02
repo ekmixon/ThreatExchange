@@ -72,10 +72,11 @@ def get_updated_files_by_signal_type(event) -> t.Dict[t.Type[SignalType], t.List
                 bucket_name == THREAT_EXCHANGE_DATA_BUCKET_NAME
                 and file_path.startswith(THREAT_EXCHANGE_DATA_FOLDER)
             ):
-                optional_signal_type = (
-                    ThreatUpdateS3Store.get_signal_type_from_object_key(file_path)
-                )
-                if optional_signal_type:
+                if optional_signal_type := (
+                    ThreatUpdateS3Store.get_signal_type_from_object_key(
+                        file_path
+                    )
+                ):
                     result[optional_signal_type].append(file_path)
 
     return result

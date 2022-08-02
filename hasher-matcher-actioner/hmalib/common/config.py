@@ -114,10 +114,10 @@ class HMAConfig:
 
     @classmethod
     def getx(cls: t.Type[TConfig], name: str) -> TConfig:
-        ret = cls.get(name)
-        if not ret:
+        if ret := cls.get(name):
+            return ret
+        else:
             raise ValueError(f"No {cls.__name__} named {name}")
-        return ret
 
     @classmethod
     def get_all(cls: t.Type[TConfig]) -> t.List[TConfig]:
@@ -132,8 +132,7 @@ class HMAConfig:
         ret = []
         for page in response_iterator:
             for item in page["Items"]:
-                obj = cls._convert_item(item)
-                if obj:
+                if obj := cls._convert_item(item):
                     ret.append(obj)
         return ret
 
@@ -144,9 +143,7 @@ class HMAConfig:
 
     @classmethod
     def _convert_item(cls, item):
-        if not item:
-            return None
-        return _dynamodb_item_to_config(cls, item)
+        return _dynamodb_item_to_config(cls, item) if item else None
 
     @classmethod
     def _scan_filter(cls):
@@ -179,17 +176,17 @@ class _HMAConfigWithSubtypeMeta(type):
     Metaclass to connect subtypes and types, provide some defaults
     """
 
-    def __new__(metacls, cls_name: str, bases, cls_dict):
+    def __new__(cls, cls_name: str, bases, cls_dict):
         # Is this the base?
         if cls_name == "HMAConfigWithSubtypes":
-            return super().__new__(metacls, cls_name, bases, cls_dict)
+            return super().__new__(cls, cls_name, bases, cls_dict)
         # Has a _PARENT already been applied?
         for base in bases:
             if hasattr(base, "_PARENT"):
-                return super().__new__(metacls, cls_name, bases, cls_dict)
+                return super().__new__(cls, cls_name, bases, cls_dict)
         # Else create magic defaults
         cls_dict.setdefault("CONFIG_TYPE", cls_name)
-        new_cls = super().__new__(metacls, cls_name, bases, cls_dict)
+        new_cls = super().__new__(cls, cls_name, bases, cls_dict)
         new_cls._PARENT = new_cls  # type: ignore
         return new_cls
 
@@ -288,13 +285,15 @@ class HMAConfigWithSubtypes(HMAConfig, metaclass=_HMAConfigWithSubtypeMeta):
         if not item:
             return None
         item = dict(item)
-        # Remove config_subtype from the dict before conversion
-        item_cls = cls._get_subtypes_by_name().get(item.pop("config_subtype"))
-        if not item_cls:
+        if item_cls := cls._get_subtypes_by_name().get(item.pop("config_subtype")):
+            return (
+                None
+                if cls not in (cls._PARENT, item_cls)
+                else _dynamodb_item_to_config(item_cls, item)
+            )
+
+        else:
             return None
-        if cls not in (cls._PARENT, item_cls):
-            return None
-        return _dynamodb_item_to_config(item_cls, item)
 
     @classmethod
     def _scan_filter(cls):

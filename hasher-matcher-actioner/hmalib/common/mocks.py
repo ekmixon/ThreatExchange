@@ -17,7 +17,7 @@ class MockedThreatExchangeAPI:
         return [
             {
                 "owner": {"id": app},
-                "id": app + "|" + str(seed),
+                "id": f"{app}|{seed}",
                 "privacy_type": "HAS_PRIVACY_GROUP",
                 "privacy_members": privacy_members,
             }

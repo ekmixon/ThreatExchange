@@ -89,7 +89,7 @@ class Common(object):
         """
 
         if attr not in self._fields + self._internal + self._unique:
-            raise pytxAttributeError('%s is not a valid attribute' % attr)
+            raise pytxAttributeError(f'{attr} is not a valid attribute')
 
         try:
             return object.__getattribute__(self, attr)
@@ -138,10 +138,7 @@ class Common(object):
         :returns: dict
         """
 
-        d = dict(
-            (n, getattr(self, n, None)) for n in self._fields
-        )
-        return d
+        return {n: getattr(self, n, None) for n in self._fields}
 
     @classmethod
     def objects(cls,
@@ -282,17 +279,7 @@ class Common(object):
                                         verify=verify)
 
     @class_or_instance_method
-    def details(cls_or_self,
-                id=None,
-                fields=None,
-                full_response=False,
-                dict_generator=False,
-                request_dict=False,
-                retries=None,
-                headers=None,
-                proxies=None,
-                verify=None,
-                metadata=False):
+    def details(self, id=None, fields=None, full_response=False, dict_generator=False, request_dict=False, retries=None, headers=None, proxies=None, verify=None, metadata=False):
         """
         Get object details. Allows you to limit the fields returned in the
         object's details.
@@ -336,13 +323,10 @@ class Common(object):
         :returns: Generator, dict, class
         """
 
-        if isinstance(cls_or_self, type):
-            url = t.URL + t.VERSION + id + '/'
-        else:
-            url = cls_or_self._DETAILS
+        url = t.URL + t.VERSION + id + '/' if isinstance(self, type) else self._DETAILS
         params = Broker.build_get_parameters()
         if fields is None:
-            fields = cls_or_self._fields
+            fields = self._fields
         if isinstance(fields, basestring):
             fields = fields.split(',')
         if fields is not None and not isinstance(fields, list):
@@ -358,38 +342,34 @@ class Common(object):
                               headers=headers,
                               proxies=proxies,
                               verify=verify)
-        else:
-            if isinstance(cls_or_self, type):
-                return Broker.get_new(cls_or_self,
-                                      Broker.get(url,
-                                                 params=params,
-                                                 retries=retries,
-                                                 headers=headers,
-                                                 proxies=proxies,
-                                                 verify=verify))
-            else:
-                cls_or_self.populate(Broker.get(url,
-                                                params=params,
-                                                retries=retries,
-                                                headers=headers,
-                                                proxies=proxies,
-                                                verify=verify))
-                cls_or_self._changed = []
+        if isinstance(self, type):
+            return Broker.get_new(
+                self,
+                Broker.get(
+                    url,
+                    params=params,
+                    retries=retries,
+                    headers=headers,
+                    proxies=proxies,
+                    verify=verify,
+                ),
+            )
+
+        self.populate(
+            Broker.get(
+                url,
+                params=params,
+                retries=retries,
+                headers=headers,
+                proxies=proxies,
+                verify=verify,
+            )
+        )
+
+        self._changed = []
 
     @class_or_instance_method
-    def connections(cls_or_self,
-                    id=None,
-                    connection=None,
-                    fields=None,
-                    limit=None,
-                    full_response=False,
-                    dict_generator=False,
-                    request_dict=False,
-                    retries=None,
-                    headers=None,
-                    proxies=None,
-                    verify=None,
-                    metadata=False):
+    def connections(self, id=None, connection=None, fields=None, limit=None, full_response=False, dict_generator=False, request_dict=False, retries=None, headers=None, proxies=None, verify=None, metadata=False):
         """
         Get object connections. Allows you to limit the fields returned for the
         objects.
@@ -433,10 +413,7 @@ class Common(object):
         :returns: Generator, dict, class, str
         """
 
-        if isinstance(cls_or_self, type):
-            url = t.URL + t.VERSION + id + '/'
-        else:
-            url = cls_or_self._DETAILS
+        url = t.URL + t.VERSION + id + '/' if isinstance(self, type) else self._DETAILS
         if connection:
             url = url + connection + '/'
         params = Broker.build_get_parameters(limit=limit)
@@ -459,36 +436,35 @@ class Common(object):
                               headers=headers,
                               proxies=proxies,
                               verify=verify)
-        else:
-            # Avoid circular imports
-            from .malware import Malware
-            from .malware_family import MalwareFamily
-            from .threat_indicator import ThreatIndicator
-            from .threat_descriptor import ThreatDescriptor
-            from .threat_exchange_member import ThreatExchangeMember
-            from .threat_tag import ThreatTag
-            conns = {
-                conn.DESCRIPTORS: ThreatDescriptor,
-                conn.DROPPED: Malware,
-                conn.DROPPED_BY: Malware,
-                conn.FAMILIES: MalwareFamily,
-                conn.MALWARE_ANALYSES: Malware,
-                conn.MEMBERS: ThreatExchangeMember,
-                conn.RELATED: ThreatIndicator,
-                conn.SIMILAR_MALWARE: Malware,
-                conn.TAGGED_OBJECTS: ThreatTag,
-                conn.THREAT_INDICATORS: ThreatIndicator,
-                conn.VARIANTS: Malware,
-            }
-            klass = conns.get(connection, None)
-            return Broker.get_generator(klass,
-                                        url,
-                                        to_dict=dict_generator,
-                                        params=params,
-                                        retries=retries,
-                                        headers=headers,
-                                        proxies=proxies,
-                                        verify=verify)
+        # Avoid circular imports
+        from .malware import Malware
+        from .malware_family import MalwareFamily
+        from .threat_indicator import ThreatIndicator
+        from .threat_descriptor import ThreatDescriptor
+        from .threat_exchange_member import ThreatExchangeMember
+        from .threat_tag import ThreatTag
+        conns = {
+            conn.DESCRIPTORS: ThreatDescriptor,
+            conn.DROPPED: Malware,
+            conn.DROPPED_BY: Malware,
+            conn.FAMILIES: MalwareFamily,
+            conn.MALWARE_ANALYSES: Malware,
+            conn.MEMBERS: ThreatExchangeMember,
+            conn.RELATED: ThreatIndicator,
+            conn.SIMILAR_MALWARE: Malware,
+            conn.TAGGED_OBJECTS: ThreatTag,
+            conn.THREAT_INDICATORS: ThreatIndicator,
+            conn.VARIANTS: Malware,
+        }
+        klass = conns.get(connection)
+        return Broker.get_generator(klass,
+                                    url,
+                                    to_dict=dict_generator,
+                                    params=params,
+                                    retries=retries,
+                                    headers=headers,
+                                    proxies=proxies,
+                                    verify=verify)
 
     def get_changed(self):
         """
@@ -498,9 +474,7 @@ class Common(object):
         :returns: dict
         """
 
-        return dict(
-            (n, getattr(self, n)) for n in self._changed if n != c.ID
-        )
+        return {n: getattr(self, n) for n in self._changed if n != c.ID}
 
     @classmethod
     def new(cls,
@@ -533,12 +507,10 @@ class Common(object):
 
         if cls.__name__ != 'ThreatPrivacyGroup':
             if td.PRIVACY_TYPE not in params:
-                raise pytxValueError('Must provide a %s' % td.PRIVACY_TYPE)
-                pass
-            else:
-                if (params[td.PRIVACY_TYPE] != pt.VISIBLE and
+                raise pytxValueError(f'Must provide a {td.PRIVACY_TYPE}')
+            if (params[td.PRIVACY_TYPE] != pt.VISIBLE and
                         len(params[td.PRIVACY_MEMBERS].split(',')) < 1):
-                    raise pytxValueError('Must provide %s' % td.PRIVACY_MEMBERS)
+                raise pytxValueError(f'Must provide {td.PRIVACY_MEMBERS}')
         if request_dict:
             return Broker.request_dict('POST',
                                        cls._URL,
@@ -592,15 +564,7 @@ class Common(object):
                            verify=verify)
 
     @class_or_instance_method
-    def send(cls_or_self,
-             id_=None,
-             params=None,
-             type_=None,
-             request_dict=False,
-             retries=None,
-             headers=None,
-             proxies=None,
-             verify=None):
+    def send(self, id_=None, params=None, type_=None, request_dict=False, retries=None, headers=None, proxies=None, verify=None):
         """
         Send custom params to the object URL. If `id` is provided it will be
         appended to the URL. If this is an uninstantiated class we will use the
@@ -628,12 +592,12 @@ class Common(object):
         :returns: dict (using json.loads()), str
         """
 
-        if isinstance(cls_or_self, type):
-            url = cls_or_self._URL
+        if isinstance(self, type):
+            url = self._URL
             if type_ is None:
                 type_ = 'GET'
         else:
-            url = cls_or_self._DETAILS
+            url = self._DETAILS
             if type_ is None:
                 type_ = 'POST'
         if id_ is not None and len(id_) > 0:
@@ -641,27 +605,29 @@ class Common(object):
         if params is None:
             params = {}
         if type_ == 'GET':
-            if request_dict:
-                return Broker.request_dict('GET',
-                                           url,
-                                           params=params)
-            return Broker.get(url,
-                              params=params,
-                              retries=retries,
-                              headers=headers,
-                              proxies=proxies,
-                              verify=verify)
-        else:
-            if request_dict:
-                return Broker.request_dict('POST',
-                                           url,
-                                           body=params)
-            return Broker.post(url,
-                               params=params,
-                               retries=retries,
-                               headers=headers,
-                               proxies=proxies,
-                               verify=verify)
+            return (
+                Broker.request_dict('GET', url, params=params)
+                if request_dict
+                else Broker.get(
+                    url,
+                    params=params,
+                    retries=retries,
+                    headers=headers,
+                    proxies=proxies,
+                    verify=verify,
+                )
+            )
+
+        if request_dict:
+            return Broker.request_dict('POST',
+                                       url,
+                                       body=params)
+        return Broker.post(url,
+                           params=params,
+                           retries=retries,
+                           headers=headers,
+                           proxies=proxies,
+                           verify=verify)
 
     def expire(self,
                timestamp,

@@ -173,15 +173,14 @@ class ContentObject(ContentObjectBase, JSONifiable):
         """
         result = asdict(self)
         result.update(
-            additional_fields=list(
-                self.additional_fields if self.additional_fields else set()
-            ),
+            additional_fields=list(self.additional_fields or set()),
             content_type=self.content_type.get_name(),
             content_ref_type=self.content_ref_type.value,
             submission_times=[s.isoformat() for s in self.submission_times],
             created_at=self.created_at.isoformat(),
             updated_at=self.updated_at.isoformat(),
         )
+
         return result
 
     def write_to_table(self, table: Table):
@@ -196,17 +195,17 @@ class ContentObject(ContentObjectBase, JSONifiable):
                 "PK": self.get_dynamodb_content_key(self.content_id),
                 "SK": self.get_dynamodb_content_type_key(),
             },
-            # If ContentRef exists it needs to match or BAD THING(tm) can happen...
-            ConditionExpression=Or(Attr("ContentRef").not_exists(), Attr("ContentRef").eq(self.content_ref)),  # type: ignore
-            # Unfortunately while prod is happy with this on multiple lines pytest breaks...
+            ConditionExpression=Or(
+                Attr("ContentRef").not_exists(),
+                Attr("ContentRef").eq(self.content_ref),
+            ),
             UpdateExpression="""SET ContentType = :ct, ContentRef = :cr, ContentRefType = :crt, SubmissionTimes = list_append(if_not_exists(SubmissionTimes, :empty_list), :s), CreatedAt = if_not_exists(CreatedAt, :c), UpdatedAt = :u ADD AdditionalFields :af""",
             ExpressionAttributeValues={
                 ":ct": self.content_type.get_name(),
                 ":cr": self.content_ref,
                 ":crt": self.content_ref_type.value,
                 ":af": self.additional_fields
-                if self.additional_fields
-                else {self.ADDITIONAL_FIELDS_PLACE_HOLDER},
+                or {self.ADDITIONAL_FIELDS_PLACE_HOLDER},
                 ":s": [s.isoformat() for s in self.submission_times],
                 ":c": self.created_at.isoformat(),
                 ":u": self.updated_at.isoformat(),
@@ -232,14 +231,16 @@ class ContentObject(ContentObjectBase, JSONifiable):
                     "ContentRef": self.content_ref,
                     "ContentRefType": self.content_ref_type.value,
                     "AdditionalFields": self.additional_fields
-                    if self.additional_fields
-                    else {self.ADDITIONAL_FIELDS_PLACE_HOLDER},
-                    "SubmissionTimes": [s.isoformat() for s in self.submission_times],
+                    or {self.ADDITIONAL_FIELDS_PLACE_HOLDER},
+                    "SubmissionTimes": [
+                        s.isoformat() for s in self.submission_times
+                    ],
                     "CreatedAt": self.created_at.isoformat(),
                     "UpdatedAt": self.updated_at.isoformat(),
                 },
                 ConditionExpression="attribute_not_exists(PK) AND attribute_not_exists(SK)",
             )
+
         except ClientError as client_error:
             # boto3 exception handling https://imgflip.com/i/5f5zfj
             if (
@@ -261,13 +262,12 @@ class ContentObject(ContentObjectBase, JSONifiable):
     ) -> t.Optional["ContentObject"]:
         if not content_id:
             return None
-        item = table.get_item(
+        if item := table.get_item(
             Key={
                 "PK": cls.get_dynamodb_content_key(content_id),
                 "SK": cls.get_dynamodb_content_type_key(),
             }
-        ).get("Item", None)
-        if item:
+        ).get("Item", None):
             return cls._result_item_to_object(item)
         return None
 

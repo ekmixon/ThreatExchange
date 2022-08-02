@@ -41,13 +41,12 @@ class DeployedInstanceClient:
     ) -> None:
         if api:
             self.api = api
-        else:
-            if not api_token:
-                raise ValueError(
-                    "Test requires an api_token OR a client_id + refresh_token to function"
-                )
-
+        elif api_token:
             self.api = HasherMatcherActionerAPI(api_url, api_token)
+        else:
+            raise ValueError(
+                "Test requires an api_token OR a client_id + refresh_token to function"
+            )
 
     ### Start HMA API wrapper ###
 
@@ -146,13 +145,12 @@ class DeployedInstanceClient:
         action_rule = ActionRule(
             name=f"{self.ACTION_RULE_PREFIX}{self.ACTION_CLASSIFICATION_LABEL}",
             action_label=ActionLabel(self.ACTION_NAME),
-            must_have_labels=set(
-                [
-                    ClassificationLabel(self.ACTION_CLASSIFICATION_LABEL),
-                ]
-            ),
+            must_have_labels={
+                ClassificationLabel(self.ACTION_CLASSIFICATION_LABEL)
+            },
             must_not_have_labels=set(),
         )
+
 
         self.create_action_rule(
             action_rule=action_rule,

@@ -45,16 +45,13 @@ def lambda_handler(event, context):
     return {"writebacks_performed": writebacks_performed}
 
 
-if __name__ == "__main__":
-    # For basic debugging
-    # This will react to real descriptors if WRITEBACK_LOCAL is on
-    if os.environ.get("WRITEBACK_LOCAL"):
-        writeback_message = WritebackMessage(
-            [
-                BankedSignal("2915547128556957", "303636684709969", "te"),
-            ],
-            WritebackTypes.RemoveOpinion,
-        )
-        event = {"Records": [{"body": writeback_message.to_aws_json()}]}
-        result = lambda_handler(event, None)
-        print(result)
+if __name__ == "__main__" and os.environ.get("WRITEBACK_LOCAL"):
+    writeback_message = WritebackMessage(
+        [
+            BankedSignal("2915547128556957", "303636684709969", "te"),
+        ],
+        WritebackTypes.RemoveOpinion,
+    )
+    event = {"Records": [{"body": writeback_message.to_aws_json()}]}
+    result = lambda_handler(event, None)
+    print(result)

@@ -199,7 +199,7 @@ class ThreatUpdatesDelta:
         end = self.end
         prev = self
         new_deltas = []
-        for i in range(n - 1):
+        for _ in range(n - 1):
             prev.end = prev.start + diff
             new_deltas.append(
                 ThreatUpdatesDelta(
@@ -415,9 +415,7 @@ class ThreatUpdateFileStore(ThreatUpdatesStore):
         self, delta: ThreatUpdatesDelta, post_apply_fn=lambda x: None
     ) -> None:
         os.makedirs(self.path, exist_ok=True)
-        state = {}
-        if delta.start > 0:
-            state = self.load_state()
+        state = self.load_state() if delta.start > 0 else {}
         for update in delta:
             item = self._serialization.from_threat_updates_json(
                 self.app_id, update.raw_json

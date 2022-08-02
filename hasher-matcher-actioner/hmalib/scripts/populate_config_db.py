@@ -37,9 +37,9 @@ SUPPORTED_CONFIGS = [
 
 def better_bool_type(s: str):
     s = s.strip().lower()
-    if s in ("true", "1"):
+    if s in {"true", "1"}:
         return True
-    if s in ("false", "0"):
+    if s in {"false", "0"}:
         return False
 
     raise argparse.ArgumentTypeError("for bools use 'true' or 'false'")
@@ -58,9 +58,11 @@ def get_configs(args):
 
 def edit_config(args):
     """Update a config of the chosen type"""
-    kwargs = {}
-    for field in fields(args.config_cls):
-        kwargs[field.name] = getattr(args, field.name)
+    kwargs = {
+        field.name: getattr(args, field.name)
+        for field in fields(args.config_cls)
+    }
+
     config = args.config_cls(**kwargs)
     hmaconfig.update_config(config)
     print(config)
@@ -116,29 +118,26 @@ def load_defaults(_args):
         ActionRule(
             name="Enqueue Mini-Castle for Review",
             action_label=ActionLabel("EnqueueMiniCastleForReview"),
-            must_have_labels=set(
-                [
-                    BankIDClassificationLabel("303636684709969"),
-                    ClassificationLabel("true_positive"),
-                ]
-            ),
-            must_not_have_labels=set(
-                [BankedContentIDClassificationLabel("3364504410306721")]
-            ),
+            must_have_labels={
+                BankIDClassificationLabel("303636684709969"),
+                ClassificationLabel("true_positive"),
+            },
+            must_not_have_labels={
+                BankedContentIDClassificationLabel("3364504410306721")
+            },
         ),
         ActionRule(
             name="Enqueue Sailboat for Review",
             action_label=ActionLabel("EnqueueSailboatForReview"),
-            must_have_labels=set(
-                [
-                    BankIDClassificationLabel("303636684709969"),
-                    ClassificationLabel("true_positive"),
-                    BankedContentIDClassificationLabel("3364504410306721"),
-                ]
-            ),
+            must_have_labels={
+                BankIDClassificationLabel("303636684709969"),
+                ClassificationLabel("true_positive"),
+                BankedContentIDClassificationLabel("3364504410306721"),
+            },
             must_not_have_labels=set(),
         ),
     ]
+
 
     for config in configs:
         # Someday maybe can do filtering or something, I dunno

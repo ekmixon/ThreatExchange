@@ -42,13 +42,12 @@ class ConfigTest(unittest.TestCase):
             TableName=config._TABLE_NAME,
         )
 
-        ret = []
         for page in response_iterator:
             for item in page["Items"]:
                 config.delete_config_by_type_and_name(
                     item["ConfigType"]["S"], item["ConfigName"]["S"]
                 )
-        return ret
+        return []
 
     @classmethod
     def tearDownClass(cls):

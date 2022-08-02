@@ -28,11 +28,12 @@ class HmaLiteConfig(t.NamedTuple):
 
     @classmethod
     def init_with_environ(cls) -> "HmaLiteConfig":
-        kwargs = {}
-        # Behold, I am a great and terrible magician
-        for name, py_type in cls._field_types.items():  # May break in future versions
-            if name in os.environ:
-                kwargs[name] = py_type(os.environ[name])
+        kwargs = {
+            name: py_type(os.environ[name])
+            for name, py_type in cls._field_types.items()
+            if name in os.environ
+        }
+
         return cls(**kwargs)
 
     @classmethod
@@ -46,9 +47,7 @@ class HmaLiteConfig(t.NamedTuple):
         os.makedirs(self.upload_folder, exist_ok=True)
 
     def _exists(self, path):
-        if path and os.path.exists(path):
-            return path
-        return ""
+        return path if path and os.path.exists(path) else ""
 
     @property
     def upload_folder(self):
@@ -56,10 +55,11 @@ class HmaLiteConfig(t.NamedTuple):
 
     @property
     def starting_index_files(self):
-        index_f = ""
         csv_f = self._exists(self.CSV_FILE)
-        if not csv_f:
-            index_f = self._exists(self.INDEX_FILE) or self.local_index_file
+        index_f = (
+            "" if csv_f else self._exists(self.INDEX_FILE) or self.local_index_file
+        )
+
         return csv_f, index_f
 
     @property

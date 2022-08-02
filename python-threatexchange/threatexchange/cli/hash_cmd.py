@@ -109,6 +109,5 @@ class HashCommand(command_base.Command):
                 signal_types = str_hashers
 
             for signal_type in signal_types:
-                hash_str = hash_fn(signal_type, inp)
-                if hash_str:
+                if hash_str := hash_fn(signal_type, inp):
                     print(signal_type.get_name(), hash_str)

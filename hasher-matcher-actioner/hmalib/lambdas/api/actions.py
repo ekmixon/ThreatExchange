@@ -14,7 +14,7 @@ class FetchAllActionsResponse(JSONifiable):
     actions_response: t.List[t.Dict[str, t.Any]]
 
     def to_json(self) -> t.Dict:
-        return {"actions_response": [action for action in self.actions_response]}
+        return {"actions_response": list(self.actions_response)}
 
 
 @dataclass

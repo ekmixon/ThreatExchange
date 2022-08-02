@@ -111,8 +111,7 @@ def lambda_handler(event, context):
         )
         return process_s3_event(event)
 
-    response = apig_wsgi_handler(event, context)
-    return response
+    return apig_wsgi_handler(event, context)
 
 
 def is_s3_event(event: dict) -> bool:
@@ -130,7 +129,7 @@ def process_s3_event(event: dict) -> None:
             dynamodb_table=dynamodb.Table(DYNAMODB_TABLE),
             submissions_queue_url=SUBMISSIONS_QUEUE_URL,
         )
-        logger.info(f"Sucessfully submitted s3 event record as url upload.")
+        logger.info("Sucessfully submitted s3 event record as url upload.")
 
 
 def submit_content_request_from_s3_event_record(

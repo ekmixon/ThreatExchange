@@ -321,11 +321,11 @@ def get_submit_api(
         return SubmitResponse(content_id=request.content_id, submit_successful=True)
 
     @submit_api.post(
-        "/put-url/", apply=[jsoninator(SubmitContentViaPutURLUploadRequestBody)]
-    )
+            "/put-url/", apply=[jsoninator(SubmitContentViaPutURLUploadRequestBody)]
+        )
     def submit_put_url(
-        request: SubmitContentViaPutURLUploadRequestBody,
-    ) -> t.Union[SubmitViaUploadUrlResponse, SubmitError]:
+            request: SubmitContentViaPutURLUploadRequestBody,
+        ) -> t.Union[SubmitViaUploadUrlResponse, SubmitError]:
         """
         Submission of content to HMA in two steps
         1st the creation to a content record and put url based on request body
@@ -338,13 +338,14 @@ def get_submit_api(
         )
 
         if presigned_url:
-            if not _record_content_submission_from_request(request):
-                return _content_exist_error(request.content_id)
-
-            return SubmitViaUploadUrlResponse(
-                content_id=request.content_id,
-                file_type=str(request.file_type),
-                presigned_url=presigned_url,
+            return (
+                SubmitViaUploadUrlResponse(
+                    content_id=request.content_id,
+                    file_type=str(request.file_type),
+                    presigned_url=presigned_url,
+                )
+                if _record_content_submission_from_request(request)
+                else _content_exist_error(request.content_id)
             )
 
         bottle.response.status = 400

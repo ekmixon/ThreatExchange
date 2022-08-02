@@ -44,7 +44,7 @@ class ThreatExchangeMember(object):
         """
 
         if attr not in self._fields and attr not in self._internal:
-            raise pytxAttributeError('%s is not a valid attribute' % attr)
+            raise pytxAttributeError(f'{attr} is not a valid attribute')
 
         try:
             return object.__getattribute__(self, attr)
@@ -92,7 +92,7 @@ class ThreatExchangeMember(object):
         """
 
         if not params:
-            params = dict()
+            params = {}
 
         members = Broker.get(url,
                              params=params,
@@ -159,7 +159,4 @@ class ThreatExchangeMember(object):
         :returns: dict
         """
 
-        d = dict(
-            (n, getattr(self, n, None)) for n in self._fields
-        )
-        return d
+        return {n: getattr(self, n, None) for n in self._fields}

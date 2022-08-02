@@ -180,7 +180,7 @@ class FileHasher(HashMatcher, FileMatcher):
     """
 
     @classmethod
-    def hash_from_file(self, file: pathlib.Path) -> str:
+    def hash_from_file(cls, file: pathlib.Path) -> str:
         """Get a string representation of the hash from a file"""
         raise NotImplementedError
 
@@ -195,7 +195,7 @@ class BytesHasher(HashMatcher, BytesMatcher):
     """
 
     @classmethod
-    def hash_from_bytes(self, bytes_: bytes) -> str:
+    def hash_from_bytes(cls, bytes_: bytes) -> str:
         """Get a string representation of the hash from bytes."""
         raise NotImplementedError
 
@@ -221,15 +221,11 @@ class SimpleSignalType(SignalType, HashMatcher):
             types = (cls.INDICATOR_TYPE,)
         if indicator_type not in types:
             return False
-        if cls.TYPE_TAG is not None:
-            return cls.TYPE_TAG in tags
-        return True
+        return cls.TYPE_TAG in tags if cls.TYPE_TAG is not None else True
 
     @classmethod
     def compare_hash(cls, hash1: str, hash2: str) -> int:
-        if hash1 == hash2:
-            return 0
-        return 1
+        return 0 if hash1 == hash2 else 1
 
     ##########################################################################
     # TODO - Remove these methods after refactor
@@ -254,8 +250,7 @@ class SimpleSignalType(SignalType, HashMatcher):
         return True
 
     def match_hash(self, signal_str: str) -> t.List[SignalMatch]:
-        found = self.state.get(signal_str)
-        if found:
+        if found := self.state.get(signal_str):
             return [SignalMatch(found.labels, found.first_descriptor_id)]
         return []
 

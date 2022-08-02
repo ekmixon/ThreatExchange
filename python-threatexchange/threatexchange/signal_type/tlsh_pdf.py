@@ -67,7 +67,11 @@ class TLSHSignal(
     def match_hash(self, signal_str: str) -> t.List[signal_base.SignalMatch]:
         matches = []
         if len(signal_str) == EXPECT_TLSH_HASH_LENGTH:
-            for x in TEMP_MATCH_IMPLEMNTATION_CHECK_DB:
-                if tlsh.diffxlen(x[0], signal_str) <= TLSH_CONFIDENT_MATCH_THRESHOLD:
-                    matches.append(signal_base.SignalMatch(x[1][0], x[1][1]))
+            matches.extend(
+                signal_base.SignalMatch(x[1][0], x[1][1])
+                for x in TEMP_MATCH_IMPLEMNTATION_CHECK_DB
+                if tlsh.diffxlen(x[0], signal_str)
+                <= TLSH_CONFIDENT_MATCH_THRESHOLD
+            )
+
         return matches

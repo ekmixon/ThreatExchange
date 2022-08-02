@@ -37,8 +37,7 @@ class AWSSecrets:
                 "Unable to load THREAT_EXCHANGE_API_TOKEN_SECRET_NAME from env"
             )
             return ""
-        api_key = self._get_str_secret(secret_name)
-        return api_key
+        return self._get_str_secret(secret_name)
 
     @functools.lru_cache(maxsize=1)
     def hma_api_tokens(self) -> t.List[str]:
@@ -59,21 +58,14 @@ class AWSSecrets:
         For secerts stored in AWS Secrets Manager as binary
         """
         response = self._get_secret_value_response(secret_name)
-        decoded_binary_secret = base64.b64decode(
-            self._get_secret_value_response("SecretBinary")
-        )
-        return decoded_binary_secret
+        return base64.b64decode(self._get_secret_value_response("SecretBinary"))
 
     def _get_str_secret(self, secret_name: str) -> str:
         """
         For secerts stored in AWS Secrets Manager as strings
         """
         response = self._get_secret_value_response(secret_name)
-        str_response = response["SecretString"]
-        return str_response
+        return response["SecretString"]
 
     def _get_secret_value_response(self, secret_name: str):
-        get_secret_value_response = self.secrets_client.get_secret_value(
-            SecretId=secret_name
-        )
-        return get_secret_value_response
+        return self.secrets_client.get_secret_value(SecretId=secret_name)
